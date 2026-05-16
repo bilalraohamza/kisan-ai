@@ -1,0 +1,41 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Build
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment variables
+.env
+.env.*
+
+# Google credentials
+credentials.json
+service_account.json
+token.json
+
+# Uploaded images
+uploads/
+*.jpg
+*.jpeg
+*.png
+!karigar-traces/*.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
