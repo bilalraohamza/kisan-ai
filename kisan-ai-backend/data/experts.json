@@ -1,1 +1,46 @@
-﻿[]
+[
+  {
+    "id": "exp001",
+    "name": "Dr. Muhammad Asif",
+    "specialization": "wheat cotton rice",
+    "phone": "0300-1234567",
+    "area": "Multan",
+    "district": "Multan",
+    "distance_km": 12,
+    "experience_years": 15,
+    "trust_score": 4.8
+  },
+  {
+    "id": "exp002",
+    "name": "Dr. Tariq Mehmood",
+    "specialization": "rice sugarcane maize",
+    "phone": "0301-9876543",
+    "area": "Lahore",
+    "district": "Lahore",
+    "distance_km": 8,
+    "experience_years": 12,
+    "trust_score": 4.6
+  },
+  {
+    "id": "exp003",
+    "name": "Dr. Khalid Hussain",
+    "specialization": "cotton wheat vegetables",
+    "phone": "0333-5556677",
+    "area": "Faisalabad",
+    "district": "Faisalabad",
+    "distance_km": 20,
+    "experience_years": 10,
+    "trust_score": 4.5
+  },
+  {
+    "id": "exp004",
+    "name": "Dr. Amjad Ali",
+    "specialization": "wheat maize potato onion",
+    "phone": "0311-4445566",
+    "area": "Vehari",
+    "district": "Vehari",
+    "distance_km": 5,
+    "experience_years": 8,
+    "trust_score": 4.3
+  }
+]
