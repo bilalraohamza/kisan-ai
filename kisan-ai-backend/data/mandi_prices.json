@@ -1,0 +1,56 @@
+{
+  "wheat": {
+    "govt_support_price_per_40kg": 3900,
+    "mandis": [
+      { "name": "Multan Grain Market", "city": "Multan", "lat": 30.1575, "lng": 71.5249, "price_per_40kg": 4100, "trend": "rising", "last_updated": "2026-05-16" },
+      { "name": "Lahore Anaj Mandi", "city": "Lahore", "lat": 31.5204, "lng": 74.3587, "price_per_40kg": 4050, "trend": "stable", "last_updated": "2026-05-16" },
+      { "name": "Faisalabad Grain Market", "city": "Faisalabad", "lat": 31.4504, "lng": 73.1350, "price_per_40kg": 3980, "trend": "falling", "last_updated": "2026-05-16" },
+      { "name": "Vehari Mandi", "city": "Vehari", "lat": 30.0449, "lng": 72.3514, "price_per_40kg": 4020, "trend": "stable", "last_updated": "2026-05-16" },
+      { "name": "Bahawalpur Mandi", "city": "Bahawalpur", "lat": 29.3956, "lng": 71.6836, "price_per_40kg": 3950, "trend": "rising", "last_updated": "2026-05-16" }
+    ]
+  },
+  "rice": {
+    "govt_support_price_per_40kg": 4000,
+    "mandis": [
+      { "name": "Sheikhupura Rice Market", "city": "Sheikhupura", "lat": 31.7167, "lng": 73.9850, "price_per_40kg": 5200, "trend": "rising", "last_updated": "2026-05-16" },
+      { "name": "Gujranwala Mandi", "city": "Gujranwala", "lat": 32.1877, "lng": 74.1945, "price_per_40kg": 5100, "trend": "stable", "last_updated": "2026-05-16" },
+      { "name": "Lahore Rice Market", "city": "Lahore", "lat": 31.5204, "lng": 74.3587, "price_per_40kg": 5150, "trend": "rising", "last_updated": "2026-05-16" }
+    ]
+  },
+  "cotton": {
+    "govt_support_price_per_40kg": 8500,
+    "mandis": [
+      { "name": "Multan Cotton Exchange", "city": "Multan", "lat": 30.1575, "lng": 71.5249, "price_per_40kg": 9200, "trend": "rising", "last_updated": "2026-05-16" },
+      { "name": "Bahawalpur Cotton Mandi", "city": "Bahawalpur", "lat": 29.3956, "lng": 71.6836, "price_per_40kg": 9100, "trend": "stable", "last_updated": "2026-05-16" },
+      { "name": "Rahim Yar Khan Mandi", "city": "Rahim Yar Khan", "lat": 28.4202, "lng": 70.2952, "price_per_40kg": 8900, "trend": "falling", "last_updated": "2026-05-16" }
+    ]
+  },
+  "sugarcane": {
+    "govt_support_price_per_40kg": 450,
+    "mandis": [
+      { "name": "Faisalabad Sugar Mills", "city": "Faisalabad", "lat": 31.4504, "lng": 73.1350, "price_per_40kg": 520, "trend": "stable", "last_updated": "2026-05-16" },
+      { "name": "Lahore Sugar Market", "city": "Lahore", "lat": 31.5204, "lng": 74.3587, "price_per_40kg": 510, "trend": "rising", "last_updated": "2026-05-16" }
+    ]
+  },
+  "maize": {
+    "govt_support_price_per_40kg": 2000,
+    "mandis": [
+      { "name": "Sahiwal Maize Market", "city": "Sahiwal", "lat": 30.6682, "lng": 73.1064, "price_per_40kg": 2300, "trend": "rising", "last_updated": "2026-05-16" },
+      { "name": "Multan Maize Mandi", "city": "Multan", "lat": 30.1575, "lng": 71.5249, "price_per_40kg": 2250, "trend": "stable", "last_updated": "2026-05-16" }
+    ]
+  },
+  "onion": {
+    "govt_support_price_per_40kg": 1200,
+    "mandis": [
+      { "name": "Karachi Vegetable Market", "city": "Karachi", "lat": 24.8607, "lng": 67.0011, "price_per_40kg": 1800, "trend": "falling", "last_updated": "2026-05-16" },
+      { "name": "Lahore Sabzi Mandi", "city": "Lahore", "lat": 31.5204, "lng": 74.3587, "price_per_40kg": 1650, "trend": "stable", "last_updated": "2026-05-16" }
+    ]
+  },
+  "potato": {
+    "govt_support_price_per_40kg": 1500,
+    "mandis": [
+      { "name": "Okara Potato Market", "city": "Okara", "lat": 30.8138, "lng": 73.4534, "price_per_40kg": 1900, "trend": "rising", "last_updated": "2026-05-16" },
+      { "name": "Lahore Sabzi Mandi", "city": "Lahore", "lat": 31.5204, "lng": 74.3587, "price_per_40kg": 1850, "trend": "stable", "last_updated": "2026-05-16" }
+    ]
+  }
+}
