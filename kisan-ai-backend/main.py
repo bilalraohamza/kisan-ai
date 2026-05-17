@@ -29,6 +29,29 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
+# Session Store (in-memory; replace with Redis for production)
+# ---------------------------------------------------------------------------
+SESSION_STORE: dict = {}
+
+
+def get_session(session_id: str) -> dict:
+    """Return the current session context for a given session ID."""
+    return SESSION_STORE.get(session_id, {})
+
+
+def update_session(session_id: str, new_data: dict):
+    """
+    Merge new_data into the existing session.
+    Only overwrites a key when the incoming value is non-empty and not 'unknown'.
+    """
+    existing = SESSION_STORE.get(session_id, {})
+    for key, value in new_data.items():
+        if value is not None and value != "" and value != "unknown":
+            existing[key] = value
+    SESSION_STORE[session_id] = existing
+
+
+# ---------------------------------------------------------------------------
 # Router Registration
 # ---------------------------------------------------------------------------
 app.include_router(chat.router,     prefix="/api/chat",     tags=["Chat"])
