@@ -1,0 +1,11 @@
+venv/
+env/
+.venv/
+__pycache__/
+*.pyc
+.env
+.git/
+google-cloud-sdk/
+*.egg-info/
+.DS_Store
+node_modules/
