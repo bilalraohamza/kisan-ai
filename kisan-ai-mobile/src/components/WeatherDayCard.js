@@ -1,0 +1,1 @@
+// WeatherDayCard component

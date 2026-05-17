@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "kisan-ai-mobile",
+    "slug": "kisan-ai-mobile",
+    "scheme": "kisanai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#7A1B2B",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#7A1B2B",
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 76
+          }
+        }
+      ],
+      "expo-camera",
+      "expo-image-picker",
+      "expo-location",
+      "expo-web-browser"
+    ]
+  }
+}
