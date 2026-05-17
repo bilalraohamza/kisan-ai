@@ -1,0 +1,1 @@
+// TreatmentCard component
