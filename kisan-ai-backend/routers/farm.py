@@ -6,12 +6,12 @@ Handles farm profile management, weather intelligence, and season planning.
 from fastapi import APIRouter
 from agents.weather_agent import run_weather_agent
 from agents.season_planner import run_season_planner_agent
-from pydantic import BaseModel
+from models.schemas import SeasonRequest, WeatherResponse
 
 router = APIRouter()
 
 
-@router.get("/weather/{lat}/{lng}", summary="Get 5-day weather forecast with farming intelligence")
+@router.get("/weather/{lat}/{lng}", response_model=WeatherResponse, summary="Get 5-day weather forecast with farming intelligence")
 async def get_weather(
     lat: float,
     lng: float,
@@ -35,15 +35,6 @@ async def get_weather(
         days_to_harvest=days_to_harvest
     )
     return result
-
-
-class SeasonRequest(BaseModel):
-    crop_type: str
-    planting_date: str           # format: YYYY-MM-DD
-    acres: float
-    farmer_lat: float = 30.1575  # default: Multan
-    farmer_lng: float = 71.5249
-    language: str = "roman_urdu" # roman_urdu | urdu | english
 
 
 @router.post("/season-plan", summary="Generate full crop service calendar with urgency ranking")

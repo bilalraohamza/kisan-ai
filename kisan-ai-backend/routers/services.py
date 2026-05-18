@@ -4,20 +4,10 @@ Handles agricultural service discovery and provider coordination.
 """
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 from agents.equipment_agent import run_equipment_agent
+from models.schemas import ServiceRequest
 
 router = APIRouter()
-
-
-class ServiceRequest(BaseModel):
-    service_type: str
-    location: dict
-    crop_type: str
-    acres: float
-    preferred_date: str
-    session_id: str
-    language: str = "roman_urdu"
 
 
 @router.post("/find", summary="Find and rank agricultural service providers")

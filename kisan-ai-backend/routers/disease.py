@@ -5,11 +5,12 @@ Handles crop disease detection via image upload + Gemini 2.5 Flash Vision.
 
 from fastapi import APIRouter, UploadFile, File, Form
 from agents.crop_diagnosis_agent import run_crop_diagnosis_agent
+from models.schemas import DiseaseAnalysisResponse
 
 router = APIRouter()
 
 
-@router.post("/analyze", summary="Upload a crop photo for disease diagnosis")
+@router.post("/analyze", response_model=DiseaseAnalysisResponse, summary="Upload a crop photo for disease diagnosis")
 async def analyze_disease(
     image: UploadFile = File(..., description="Crop photo (JPEG or PNG)"),
     crop_type: str = Form(..., description="Crop name e.g. wheat, cotton, rice"),

@@ -5,11 +5,12 @@ Handles real-time mandi price data and sell timing intelligence.
 
 from fastapi import APIRouter
 from agents.mandi_price_agent import run_mandi_price_agent
+from models.schemas import MandiPriceResponse
 
 router = APIRouter()
 
 
-@router.get("/prices/{crop_type}", summary="Get mandi prices and sell timing advice for a crop")
+@router.get("/prices/{crop_type}", response_model=MandiPriceResponse, summary="Get mandi prices and sell timing advice for a crop")
 async def get_mandi_prices(
     crop_type: str,
     farmer_lat: float = 30.1575,

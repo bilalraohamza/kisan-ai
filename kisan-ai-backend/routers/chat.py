@@ -10,28 +10,17 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 from agents.clarification_agent import run_clarification_agent
+from models.schemas import ChatRequest, ChatResponse
 
 router = APIRouter()
-
-
-# ---------------------------------------------------------------------------
-# Request Schema
-# ---------------------------------------------------------------------------
-
-class ChatRequest(BaseModel):
-    message: str
-    session_id: str
-    language: str = "roman_urdu"
-    farmer_profile: dict = {}
 
 
 # ---------------------------------------------------------------------------
 # POST /api/chat  — Main conversation endpoint
 # ---------------------------------------------------------------------------
 
-@router.post("", summary="Send a farmer message and receive a contextual reply")
+@router.post("", response_model=ChatResponse, summary="Send a farmer message and receive a contextual reply")
 async def chat(request: ChatRequest):
     """
     Entry point for the Kisan AI chat pipeline.
@@ -46,7 +35,7 @@ async def chat(request: ChatRequest):
 
     # Load session and enrich with current farmer profile
     session_context = get_session(request.session_id)
-    session_context["farmer_profile"] = request.farmer_profile
+    session_context["farmer_profile"] = request.farm_profile.model_dump(exclude_none=True)
 
     # Run Gemini-powered clarification agent
     result = run_clarification_agent(request.message, session_context)
