@@ -50,6 +50,26 @@ Analyze this farmer message and the existing session context.
 Farmer message: "{message}"
 Session context so far: {json.dumps(session_context)}
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL MEMORY RULE — READ THIS FIRST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The session_context already contains fields collected from previous messages.
+You MUST treat these as already answered.
+Do NOT ask for any field that already exists in session_context.
+Only ask for fields that are completely missing from session_context.
+
+Currently collected fields: {json.dumps(session_context)}
+
+Specific rules:
+- If "crop_type" is already in session_context → NEVER ask for crop type again.
+- If "location" is already in session_context → NEVER ask for location again.
+- If "acres" is already in session_context → NEVER ask for acres again.
+- If "preferred_date" is already in session_context → NEVER ask for date again.
+- If "planting_date" is already in session_context → NEVER ask for planting date again.
+
+Treat every key in session_context as 100% confirmed. Do not re-verify them.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Your tasks:
 1. Detect the farmer's intent. Choose ONE from:
    - disease_check
@@ -60,7 +80,7 @@ Your tasks:
    - season_planning
    - unknown
 
-2. Extract any fields mentioned in the message:
+2. Extract any NEW fields mentioned in THIS message only:
    - crop_type (example: wheat, gehun, chawal, cotton, گندم)
    - acres (any number mentioned with acre, kanal, marla — convert all to acres)
    - location (any city, village, tehsil, district name)
@@ -82,6 +102,10 @@ Your tasks:
    - mandi_query: crop_type, location
    - weather_query: location
    - season_planning: crop_type, planting_date, acres, location
+
+   IMPORTANT: A field present in session_context counts as collected.
+   Only put it in missing_fields if it is absent from BOTH session_context
+   AND the current message.
 
 5. If a field is missing, generate ONE clarification question
    in the detected language asking for that field.
