@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import chat, disease, services, mandi, farm
+from services.database import init_db
 
 # ---------------------------------------------------------------------------
 # App Initialisation
@@ -32,57 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------------
-# Session Store — file-backed JSON (survives within the same Cloud Run instance)
-# ---------------------------------------------------------------------------
-# NOTE: Cloud Run may spin up multiple instances, so data can still be lost
-# between instances. For true multi-instance persistence, upgrade to Redis.
-# Within a single instance, /tmp persists across requests.
-
-SESSION_FILE = "/tmp/sessions.json"
-_session_lock = threading.Lock()
-
-
-def _load_sessions() -> dict:
-    """Read the sessions file from disk. Returns {} on any error."""
-    try:
-        if os.path.exists(SESSION_FILE):
-            with open(SESSION_FILE, 'r') as f:
-                return json.load(f)
-    except Exception:
-        pass
-    return {}
-
-
-def _save_sessions(sessions: dict):
-    """Write the sessions dict to disk. Silently ignores write errors."""
-    try:
-        with open(SESSION_FILE, 'w') as f:
-            json.dump(sessions, f)
-    except Exception:
-        pass
-
-
-def get_session(session_id: str) -> dict:
-    """Return the current session context for a given session ID."""
-    with _session_lock:
-        sessions = _load_sessions()
-        return sessions.get(session_id, {})
-
-
-def update_session(session_id: str, new_data: dict):
-    """
-    Merge new_data into the existing session.
-    Only overwrites a key when the incoming value is non-empty and not 'unknown'.
-    """
-    with _session_lock:
-        sessions = _load_sessions()
-        existing = sessions.get(session_id, {})
-        for key, value in new_data.items():
-            if value is not None and value != "" and value != "unknown":
-                existing[key] = value
-        sessions[session_id] = existing
-        _save_sessions(sessions)
+@app.on_event("startup")
+async def startup():
+    init_db()
+    print("[main] SQLite database initialized")
 
 
 # ---------------------------------------------------------------------------

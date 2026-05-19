@@ -13,113 +13,74 @@ NO if/else logic. NO keyword lists. Gemini decides everything.
 
 import json
 from utils.llm_client import call_llm
+from services.database import get_session, save_session, get_recent_messages
 
+def run_clarification_agent(message: str, session_id: str, language: str = "roman_urdu") -> dict:
 
-def run_clarification_agent(message: str, session_context: dict) -> dict:
-    """
-    Run the clarification agent against a single farmer message.
+    # Load session from SQLite
+    session = get_session(session_id)
+    recent_messages = get_recent_messages(session_id, limit=10)
 
-    Args:
-        message:         Raw farmer message (any language / script).
-        session_context: Existing session dict accumulated across turns.
+    # Build conversation context
+    conversation_context = "\n".join([
+        f"{msg['role'].upper()}: {msg['content']}"
+        for msg in recent_messages
+    ])
 
-    Returns:
-        dict with keys: intent, detected_language, extracted_fields,
-        needs_clarification, clarification_question, reply, reply_for_tts, trace.
-    """
+    # Build known fields from session
+    known_fields = {
+        "crop_type": session.get('crop_type'),
+        "acres": session.get('acres'),
+        "location": session.get('location'),
+        "planting_date": session.get('planting_date'),
+        "language": session.get('language', language)
+    }
+    known_fields_clean = {k: v for k, v in known_fields.items() 
+                          if v is not None}
 
-    # ------------------------------------------------------------------
-    # STEP 1 — WORKPLAN (logged in trace)
-    # ------------------------------------------------------------------
-    workplan = (
-        "1. Send farmer message to Gemini 2.0 Flash "
-        "2. Gemini detects intent, extracts all available fields, detects language "
-        "3. Check which required fields are still missing "
-        "4. If missing fields exist, ask for ONE field in farmer's language "
-        "5. If all fields collected, return intent and data to trigger next agent "
-        "6. Build and return full trace"
-    )
-
-    # ------------------------------------------------------------------
-    # STEP 2 — GEMINI PROMPT
-    # ------------------------------------------------------------------
     prompt = f"""
-You are an agricultural assistant for Pakistani farmers.
-Analyze this farmer message and the existing session context.
+You are Kisan AI, an agricultural assistant for Pakistani farmers.
 
-Farmer message: "{message}"
-Session context so far: {json.dumps(session_context)}
+CONVERSATION HISTORY (last 10 messages):
+{conversation_context if conversation_context else "No previous messages"}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CRITICAL MEMORY RULE — READ THIS FIRST:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-The session_context already contains fields collected from previous messages.
-You MUST treat these as already answered.
-Do NOT ask for any field that already exists in session_context.
-Only ask for fields that are completely missing from session_context.
+ALREADY KNOWN ABOUT THIS FARMER — NEVER ASK FOR THESE AGAIN:
+{json.dumps(known_fields_clean, ensure_ascii=False)}
 
-Currently collected fields: {json.dumps(session_context)}
+CURRENT MESSAGE: "{message}"
 
-Specific rules:
-- If "crop_type" is already in session_context → NEVER ask for crop type again.
-- If "location" is already in session_context → NEVER ask for location again.
-- If "acres" is already in session_context → NEVER ask for acres again.
-- If "preferred_date" is already in session_context → NEVER ask for date again.
-- If "planting_date" is already in session_context → NEVER ask for planting date again.
+TASKS:
+1. Detect intent: disease_check, equipment_needed, labor_needed, 
+   mandi_query, weather_query, season_planning, or unknown
+2. Extract any NEW fields from current message only
+3. Merge with already known fields
+4. Check what is still missing for the detected intent
+5. If missing fields exist, ask for ONE field only
+6. Generate reply in {language}
 
-Treat every key in session_context as 100% confirmed. Do not re-verify them.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REQUIRED FIELDS PER INTENT:
+- disease_check: crop_type, acres, location
+- equipment_needed: crop_type, acres, location, preferred_date
+- labor_needed: crop_type, acres, location, preferred_date
+- mandi_query: crop_type, location
+- weather_query: location
+- season_planning: crop_type, planting_date, acres, location
 
-Your tasks:
-1. Detect the farmer's intent. Choose ONE from:
-   - disease_check
-   - equipment_needed
-   - labor_needed
-   - mandi_query
-   - weather_query
-   - season_planning
-   - unknown
+CRITICAL RULES:
+- If crop_type is in ALREADY KNOWN, never ask for it again
+- If location is in ALREADY KNOWN, never ask for it again
+- If acres is in ALREADY KNOWN, never ask for it again
+- missing_fields must never include fields in ALREADY KNOWN
+- Extract crop names in any language: gandam=wheat, chawal=rice, 
+  kapas=cotton, makki=maize, ganna=sugarcane
 
-2. Extract any NEW fields mentioned in THIS message only:
-   - crop_type (example: wheat, gehun, chawal, cotton, گندم)
-   - acres (any number mentioned with acre, kanal, marla — convert all to acres)
-   - location (any city, village, tehsil, district name)
-   - preferred_date (any date or time reference)
-   - planting_date (when the crop was planted)
+STRICT LANGUAGE RULE:
+- roman_urdu: Roman Urdu only, no Urdu script
+- urdu: Urdu script only
+- english: English only
+Current language: {language}
 
-3. Detect language:
-   - urdu: if message contains Urdu script characters
-   - roman_urdu: if message uses Roman letters but Urdu words
-   - english: if message is in English
-
-4. Check which required fields are still missing after combining
-   extracted fields with session context.
-
-   Required fields per intent:
-   - disease_check: crop_type, acres, location
-   - equipment_needed: crop_type, acres, location, preferred_date
-   - labor_needed: crop_type, acres, location, preferred_date
-   - mandi_query: crop_type, location
-   - weather_query: location
-   - season_planning: crop_type, planting_date, acres, location
-
-   IMPORTANT: A field present in session_context counts as collected.
-   Only put it in missing_fields if it is absent from BOTH session_context
-   AND the current message.
-
-5. If a field is missing, generate ONE clarification question
-   in the detected language asking for that field.
-
-   Language rules:
-   - roman_urdu: Write in Roman Urdu. Example: "Aap ka fasal konsa hai?"
-   - urdu: Write in Urdu script. Example: "آپ کی فصل کون سی ہے؟"
-   - english: Write in simple English. Example: "What crop are you growing?"
-
-6. Generate a natural conversational reply in the farmer's language.
-   If clarification is needed, the reply IS the clarification question.
-   If all fields collected, reply confirms and says processing is starting.
-
-Return ONLY valid JSON. No markdown. No explanation outside JSON.
+Return ONLY valid JSON. No markdown.
 {{
   "intent": "string",
   "detected_language": "roman_urdu|urdu|english",
@@ -130,63 +91,63 @@ Return ONLY valid JSON. No markdown. No explanation outside JSON.
     "preferred_date": "string or null",
     "planting_date": "string or null"
   }},
-  "missing_fields": ["list of missing field names"],
+  "missing_fields": ["list"],
   "needs_clarification": true or false,
   "clarification_question": "string or null",
-  "reply": "string — natural reply in farmer's language",
-  "reply_for_tts": "string — same reply but clean, no special characters",
-  "reasoning": "string — explain why you made these decisions"
+  "reply": "string",
+  "reply_for_tts": "string",
+  "reasoning": "string"
 }}
 """
 
-    # ------------------------------------------------------------------
-    # STEP 3 — CALL LLM (via shared OpenRouter client)
-    # ------------------------------------------------------------------
     llm_output = call_llm(prompt)
 
-    # ------------------------------------------------------------------
-    # STEP 4 — BUILD TRACE
-    # ------------------------------------------------------------------
+    # Merge known fields with newly extracted fields
+    new_extracted = llm_output.get("extracted_fields", {})
+    final_fields = {**known_fields_clean}
+    for key, value in new_extracted.items():
+        if value is not None and value != "" and value != "unknown":
+            final_fields[key] = value
+
+    # Save to SQLite
+    save_session(session_id, {
+        'language': language,
+        'crop_type': final_fields.get('crop_type'),
+        'acres': final_fields.get('acres'),
+        'location': final_fields.get('location'),
+        'planting_date': final_fields.get('planting_date'),
+        'intent': llm_output.get('intent'),
+        'new_messages': [
+            {'role': 'user', 'content': message, 
+             'timestamp': __import__('datetime').datetime.utcnow().isoformat()},
+            {'role': 'assistant', 
+             'content': llm_output.get('reply', ''),
+             'timestamp': __import__('datetime').datetime.utcnow().isoformat()}
+        ]
+    })
+
+    # Build trace
     trace = {
         "agent": "Clarification Agent",
-        "model": "openrouter/auto",
-        "workplan": workplan,
-        "tool_call": "OpenRouter LLM — intent detection, field extraction, language detection",
+        "workplan": "1. Load session from SQLite 2. Build conversation context 3. Call LLM with full history 4. Merge extracted fields with known fields 5. Save to SQLite 6. Return response",
+        "tool_call": "OpenRouter LLM + SQLite",
+        "known_fields_loaded": known_fields_clean,
         "llm_raw_output": llm_output,
-        "observation": (
-            f"Intent detected: {llm_output['intent']}. "
-            f"Language: {llm_output['detected_language']}. "
-            f"Fields extracted: {llm_output['extracted_fields']}. "
-            f"Missing: {llm_output['missing_fields']}"
-        ),
+        "final_fields": final_fields,
+        "observation": f"Intent: {llm_output.get('intent')}. Known: {known_fields_clean}. New: {new_extracted}",
         "reasoning": llm_output.get("reasoning", ""),
-        "decision": (
-            "Ask clarification"
-            if llm_output["needs_clarification"]
-            else f"All fields collected — trigger {llm_output['intent']}"
-        ),
-        "action": (
-            f"Returned question: {llm_output['clarification_question']}"
-            if llm_output["needs_clarification"]
-            else "Passed complete data to next agent"
-        ),
-        "outcome": (
-            "Farmer must reply with more information"
-            if llm_output["needs_clarification"]
-            else "Intent and all fields ready for specialist agent"
-        ),
+        "decision": "Ask clarification" if llm_output.get("needs_clarification") else f"All fields ready — trigger {llm_output.get('intent')}",
+        "action": f"Returned question: {llm_output.get('clarification_question')}" if llm_output.get("needs_clarification") else "Passed complete data to next agent",
+        "outcome": "Farmer must reply" if llm_output.get("needs_clarification") else "Ready for specialist agent"
     }
 
-    # ------------------------------------------------------------------
-    # STEP 5 — RETURN STRUCTURED RESULT
-    # ------------------------------------------------------------------
     return {
-        "intent": llm_output["intent"],
-        "detected_language": llm_output["detected_language"],
-        "extracted_fields": llm_output["extracted_fields"],
-        "needs_clarification": llm_output["needs_clarification"],
+        "intent": llm_output.get("intent"),
+        "detected_language": llm_output.get("detected_language", language),
+        "extracted_fields": final_fields,
+        "needs_clarification": llm_output.get("needs_clarification"),
         "clarification_question": llm_output.get("clarification_question"),
-        "reply": llm_output["reply"],
-        "reply_for_tts": llm_output["reply_for_tts"],
-        "trace": trace,
+        "reply": llm_output.get("reply"),
+        "reply_for_tts": llm_output.get("reply_for_tts"),
+        "trace": trace
     }

@@ -75,12 +75,10 @@ class WeatherDay(BaseModel):
 # ===========================================================================
 
 class ChatRequest(BaseModel):
-    """POST /api/chat — farmer chat message."""
-    message: str = Field(..., description="Raw farmer message in any language or script")
-    session_id: str = Field(..., description="Unique session identifier (UUID)")
-    language: str = Field("roman_urdu", description="roman_urdu | urdu | english")
-    farm_profile: FarmerProfile = Field(default_factory=FarmerProfile,
-                                        description="Optional farm context from mobile app")
+    message: str
+    session_id: str
+    language: str = "roman_urdu"
+    farmer_profile: dict = {}
 
 
 class ServiceRequest(BaseModel):
