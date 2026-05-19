@@ -134,27 +134,39 @@ Your tasks:
 4. Calculate overall farming risk level for this week
 5. Recommend specific actions farmer should take today
 
-STRICT LANGUAGE RULE — YOU MUST FOLLOW THIS EXACTLY:
-- If language is "roman_urdu": Write EVERY field in Roman Urdu
-  (Urdu words using English alphabet only).
-  Example: "Kal tez barish hone ka imkan hai, fasal ko mehfooz karein."
-  NEVER use Urdu script characters.
+ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
+The farmer has selected language: {language}
 
-- If language is "urdu": Write EVERY field in Urdu script only.
-  Example: "کل تیز بارش ہونے کا امکان ہے، فصل کو محفوظ کریں۔"
-  NEVER use Roman letters for Urdu words.
+You MUST write every single text field in that language.
+No mixing. No exceptions.
 
-- If language is "english": Write EVERY field in simple English only.
-  Example: "Heavy rain expected tomorrow, protect your crops."
-  NEVER use Urdu words or script.
+IF language == "english":
+  Write ALL text in English only.
+  Zero Urdu words. Zero Roman Urdu.
+  Good: "Heavy rain expected tomorrow, protect your crops."
+  Bad: "Kal barish hogi" or "کل بارش ہوگی"
 
-This rule applies to ALL these fields without exception:
+IF language == "roman_urdu":
+  Write ALL text in Roman Urdu only.
+  Use Urdu words spelled in English letters.
+  Zero Urdu script characters.
+  Good: "Kal tez barish hone ka imkan hai, fasal ko mehfooz karein."
+  Bad: "کل تیز بارش" or "Heavy rain tomorrow"
+
+IF language == "urdu":
+  Write ALL text in Urdu script only.
+  Zero English words for Urdu concepts.
+  Zero Roman Urdu.
+  Good: "کل تیز بارش ہونے کا امکان ہے، فصل کو محفوظ کریں۔"
+  Bad: "Kal barish" or "Heavy rain"
+
+This rule applies to EVERY text field in your JSON response
+without any exception:
 - farming_advisory for each day
 - urgent_alert
 - best_harvest_window
 - action_today
-
-Current language selected: {language}
+- reasoning
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
 {{

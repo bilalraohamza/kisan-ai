@@ -202,7 +202,34 @@ Your tasks:
 5. Calculate how much more farmer earns vs government support price
 6. Generate one urgent alert if prices are falling fast
 
-STRICT LANGUAGE RULE: {lang_instruction}
+STRICT LANGUAGE RULE — THIS IS MANDATORY:
+You MUST write EVERY text field in this exact language: {language}
+
+If language is "english":
+  - Write everything in English only
+  - Example sell_timing_advice: "Sell now at Faisalabad Sugar Mills for best net return"
+  - NEVER use Urdu or Roman Urdu words
+
+If language is "roman_urdu":
+  - Write everything in Roman Urdu only
+  - Example sell_timing_advice: "Abhi Faisalabad mein bechein, sab se zyada net milega"
+  - NEVER use Urdu script characters
+
+If language is "urdu":
+  - Write everything in Urdu script only
+  - Example sell_timing_advice: "ابھی فیصل آباد میں بیچیں، سب سے زیادہ خالص ملے گا"
+  - NEVER use Roman letters for Urdu words
+
+This rule applies to ALL of these fields:
+- sell_timing_advice
+- best_mandi_reason
+- market_vs_support
+- urgent_alert
+- potential_extra_earning
+- reasoning
+
+Current language selection: {language}
+Violating this rule is not acceptable.
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
 {{
@@ -212,7 +239,7 @@ Return ONLY valid JSON. No markdown. No explanation outside JSON.
   "market_vs_support": "how market price compares to govt support price in farmer language",
   "urgent_alert": "string or null — only if prices falling fast",
   "wait_or_sell": "sell_now or wait_3_5_days or wait_1_week",
-  "potential_extra_earning": "how much more farmer earns vs support price",
+  "potential_extra_earning": "string describing how much more farmer earns vs support price (e.g. 'PKR 5,000 zyada milega')",
   "reasoning": "explain your market analysis and recommendation"
 }}
 """
@@ -264,6 +291,6 @@ Return ONLY valid JSON. No markdown. No explanation outside JSON.
         "market_vs_support": llm_output.get("market_vs_support"),
         "urgent_alert": llm_output.get("urgent_alert"),
         "wait_or_sell": llm_output.get("wait_or_sell"),
-        "potential_extra_earning": llm_output.get("potential_extra_earning"),
+        "potential_extra_earning": str(llm_output.get("potential_extra_earning", "")),
         "trace": trace,
     }

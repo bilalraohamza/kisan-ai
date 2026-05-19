@@ -19,7 +19,7 @@ async def find_service(request: ServiceRequest):
     3. OpenRouter LLM ranks providers by availability, distance, trust, and rate
     4. Returns ranked list with booking message and coordination plan
 
-    service_type options: harvester | tractor | labor | storage | transport
+    service_type options: harvester | tractor | drone | labor | storage | transport
     """
     result = run_equipment_agent(
         service_type=request.service_type,

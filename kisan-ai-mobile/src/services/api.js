@@ -1,26 +1,153 @@
 import axios from 'axios';
+import * as Crypto from 'expo-crypto';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Person A will give you this URL on Day 2 after Railway deploy
-const BASE_URL = 'http://localhost:8000';
+// ─── Live Backend (Google Cloud Run) ──────────────────────────────────────────
+const BASE_URL = 'https://kisan-ai-backend-669164319923.asia-south1.run.app';
 
-const api = axios.create({ baseURL: BASE_URL, timeout: 30000 });
+// ─── Centralised endpoint map ──────────────────────────────────────────────────
+export const ENDPOINTS = {
+  chat: `${BASE_URL}/api/chat`,
+  diseaseAnalyze: `${BASE_URL}/api/disease/analyze`,
+  weather: (lat, lng) => `${BASE_URL}/api/farm/weather/${lat}/${lng}`,
+  servicesFind: `${BASE_URL}/api/services/find`,
+  mandiPrices: (cropType) => `${BASE_URL}/api/mandi/prices/${cropType}`,
+  seasonPlan: `${BASE_URL}/api/farm/season-plan`,
+  health: `${BASE_URL}/health`,
+};
 
-export const chatMessage = (text, language, farmProfile) =>
-  api.post('/api/chat', { message: text, language, farm_profile: farmProfile });
+// ─── Axios instance ────────────────────────────────────────────────────────────
+const api = axios.create({ baseURL: BASE_URL, timeout: 90000 });
 
-export const analyzeDisease = (formData) =>
-  api.post('/api/disease/analyze', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const config = error.config;
+    if (!config || config._retryCount >= 2) {
+      return Promise.reject(error);
+    }
+    if (
+      error.code === 'ECONNABORTED' ||
+      error.message?.includes('timeout') ||
+      error.response?.status === 429 ||
+      error.response?.status === 503
+    ) {
+      config._retryCount = (config._retryCount || 0) + 1;
+      const waitTime = config._retryCount * 5000;
+      console.log('[api] Retry ' + config._retryCount + ' after ' + waitTime + 'ms...');
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return api(config);
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ─── Session ID — persists across app restarts ────────────────────────────────
+let _sessionId = null;
+
+export const getSessionId = async () => {
+  if (_sessionId) return _sessionId;
+
+  try {
+    const stored = await AsyncStorage.getItem('kisan_session_id');
+    if (stored) {
+      _sessionId = stored;
+    } else {
+      _sessionId = Crypto.randomUUID();
+      await AsyncStorage.setItem('kisan_session_id', _sessionId);
+    }
+  } catch {
+    _sessionId = Crypto.randomUUID();
+  }
+
+  return _sessionId;
+};
+
+// ─── Health check ──────────────────────────────────────────────────────────────
+export const checkHealth = () =>
+  fetch(ENDPOINTS.health)
+    .then((res) => res.json())
+    .then((data) => console.log('[Kisan AI] Backend connected:', data))
+    .catch((err) => console.warn('[Kisan AI] Backend connection failed:', err));
+
+// ─── Chat ──────────────────────────────────────────────────────────────────────
+export const chatMessage = async (text, language = 'roman_urdu', farmProfile = {}) => {
+  const sessionId = await getSessionId();
+  return api.post('/api/chat', {
+    message: text,
+    language,
+    farmer_profile: farmProfile,
+    session_id: sessionId,
   });
+};
 
-export const getWeather = (lat, lng) =>
-  api.get(`/api/weather/${lat}/${lng}`);
+// ─── Disease Analysis ──────────────────────────────────────────────────────────
+export const analyzeDisease = async (formData, language = 'roman_urdu') => {
+  const sessionId = await getSessionId();
+  formData.append('language', language);
+  formData.append('session_id', sessionId);
+  return api.post('/api/disease/analyze', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 90000
+  });
+};
 
-export const getMandiPrices = (cropType) =>
-  api.get(`/api/mandi/prices/${cropType}`);
+// ─── Weather ───────────────────────────────────────────────────────────────────
+export const getWeather = async (lat, lng, language = 'roman_urdu') => {
+  const sessionId = await getSessionId();
+  return api.get(`/api/farm/weather/${lat}/${lng}`, {
+    params: { language, session_id: sessionId },
+    timeout: 90000
+  });
+};
 
-export const saveFarm = (farmData) =>
-  api.post('/api/farm/save', farmData);
+// ─── Mandi Prices ─────────────────────────────────────────────────────────────
+export const getMandiPrices = async (cropType, language = 'roman_urdu') => {
+  const sessionId = await getSessionId();
+  return api.get(`/api/mandi/prices/${cropType}`, {
+    params: { language, session_id: sessionId },
+    timeout: 90000
+  });
+};
 
-export const findServices = (serviceType, farmProfile) =>
-  api.post('/api/services/find', { service_type: serviceType, farm_profile: farmProfile });
+// ─── Services Find ────────────────────────────────────────────────────────────
+export const findServices = async (serviceType, farmProfile = {}, language = 'roman_urdu') => {
+  const sessionId = await getSessionId();
+  return api.post('/api/services/find', {
+    service_type: serviceType,
+    farmer_profile: farmProfile,
+    language,
+    session_id: sessionId,
+  });
+};
+
+// ─── Season Plan ──────────────────────────────────────────────────────────────
+export const getSeasonPlan = async (
+  cropType,
+  plantingDate,
+  acres = 5,
+  farmerLat = 30.1575,
+  farmerLng = 71.5249,
+  language = 'roman_urdu'
+) => {
+  const sessionId = await getSessionId();
+  return api.post('/api/farm/season-plan', {
+    crop_type:     cropType,
+    planting_date: plantingDate,
+    acres:         parseFloat(acres) || 5,
+    farmer_lat:    parseFloat(farmerLat) || 30.1575,
+    farmer_lng:    parseFloat(farmerLng) || 71.5249,
+    language,
+    session_id:    sessionId,
+  }, { timeout: 90000 });
+};
+
+// ─── Save Farm ────────────────────────────────────────────────────────────────
+export const saveFarm = async (farmData, language = 'roman_urdu') => {
+  const sessionId = await getSessionId();
+  return api.post('/api/farm/save', {
+    ...farmData,
+    language,
+    session_id: sessionId,
+  });
+};

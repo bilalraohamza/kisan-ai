@@ -74,11 +74,37 @@ CRITICAL RULES:
 - Extract crop names in any language: gandam=wheat, chawal=rice, 
   kapas=cotton, makki=maize, ganna=sugarcane
 
-STRICT LANGUAGE RULE:
-- roman_urdu: Roman Urdu only, no Urdu script
-- urdu: Urdu script only
-- english: English only
-Current language: {language}
+ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
+The farmer has selected language: {language}
+
+You MUST write every single text field in that language.
+No mixing. No exceptions.
+
+IF language == "english":
+  Write ALL text in English only.
+  Zero Urdu words. Zero Roman Urdu.
+  Good: "What crop are you growing?"
+  Bad: "Aap kaunsi fasal ugate hain?" or "آپ کونسی فصل اگاتے ہیں؟"
+
+IF language == "roman_urdu":
+  Write ALL text in Roman Urdu only.
+  Use Urdu words spelled in English letters.
+  Zero Urdu script characters.
+  Good: "Aap kaunsi fasal ugate hain?"
+  Bad: "آپ کونسی فصل" or "What crop"
+
+IF language == "urdu":
+  Write ALL text in Urdu script only.
+  Zero English words for Urdu concepts.
+  Zero Roman Urdu.
+  Good: "آپ کونسی فصل اگاتے ہیں؟"
+  Bad: "Aap kaunsi fasal" or "What crop"
+
+This rule applies to EVERY text field in your JSON response
+without any exception:
+- clarification_question
+- reply
+- reply_for_tts
 
 Return ONLY valid JSON. No markdown.
 {{

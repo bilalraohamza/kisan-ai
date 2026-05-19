@@ -138,12 +138,7 @@ def run_equipment_agent(
     # ------------------------------------------------------------------
     # STEP 2 — LANGUAGE INSTRUCTION
     # ------------------------------------------------------------------
-    language_instructions = {
-        "roman_urdu": "Write ALL farmer-facing text in Roman Urdu only. NEVER use Urdu script.",
-        "urdu": "Write ALL farmer-facing text in Urdu script only. NEVER use Roman letters for Urdu words.",
-        "english": "Write ALL farmer-facing text in simple English only.",
-    }
-    lang_instruction = language_instructions.get(language, language_instructions["roman_urdu"])
+    # Language rule is embedded directly in the prompt
 
     # ------------------------------------------------------------------
     # STEP 3 — LOAD AND FILTER PROVIDERS
@@ -152,6 +147,7 @@ def run_equipment_agent(
     with open(providers_path, "r", encoding="utf-8") as f:
         all_providers = json.load(f)
 
+    # drone is a first-class service type stored as type="drone" in providers.json
     filtered_providers = [p for p in all_providers if p["type"] == service_type]
 
     if not filtered_providers:
@@ -206,7 +202,40 @@ Your tasks:
 4. Calculate total cost for {acres} acres with top provider
 5. Suggest backup provider in case top provider is unavailable
 
-STRICT LANGUAGE RULE: {lang_instruction}
+ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
+The farmer has selected language: {language}
+
+You MUST write every single text field in that language.
+No mixing. No exceptions.
+
+IF language == "english":
+  Write ALL text in English only.
+  Zero Urdu words. Zero Roman Urdu.
+  Good: "Sell now at Faisalabad for best net return"
+  Bad: "Abhi bechein" or "ابھی بیچیں"
+
+IF language == "roman_urdu":
+  Write ALL text in Roman Urdu only.
+  Use Urdu words spelled in English letters.
+  Zero Urdu script characters.
+  Good: "Abhi Faisalabad mein bechein, sab se zyada net milega"
+  Bad: "ابھی بیچیں" or "Sell now"
+
+IF language == "urdu":
+  Write ALL text in Urdu script only.
+  Zero English words for Urdu concepts.
+  Zero Roman Urdu.
+  Good: "ابھی فیصل آباد میں بیچیں، سب سے زیادہ خالص ملے گا"
+  Bad: "Abhi bechein" or "Sell now"
+
+This rule applies to EVERY text field in your JSON response
+without any exception:
+- ranking_reason for each provider
+- top_recommendation
+- booking_message
+- coordination_plan
+- backup_provider
+- reasoning
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
 {{

@@ -2,7 +2,11 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import * as Speech from 'expo-speech';
 
+import { useLanguage } from '../context/LanguageContext';
+
 export default function UrgentBanner({ message, autoSpeak = false }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     if (autoSpeak && message) {
       Speech.speak(message, { language: 'en-US', rate: 0.85 });
@@ -15,7 +19,7 @@ export default function UrgentBanner({ message, autoSpeak = false }) {
     <View style={styles.banner}>
       <Text style={{ fontSize: 22 }}>⚠️</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>Fori Ittela!</Text>
+        <Text style={styles.title}>{t?.weather?.urgentTitle || 'Fori Ittela!'}</Text>
         <Text style={styles.body}>{message}</Text>
       </View>
     </View>

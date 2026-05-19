@@ -1,51 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AjrakBand   from '../components/AjrakBand';
-import { C }       from '../constants/colors';
+import AjrakBand from '../components/AjrakBand';
+import { C } from '../constants/colors';
 import { getMandiPrices } from '../services/api';
-import { useLanguage }    from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MOCK_MANDIS = [
-  { name: 'Vehari Mandi',    price: 3420, change: +80, dist: 8  },
-  { name: 'Multan Mandi',    price: 3390, change: +40, dist: 45 },
-  { name: 'Bahawalpur Mandi', price: 3350, change: -20, dist: 62 },
-];
+// We will generate CROPS array dynamically inside the component
 
 export default function MandiScreen() {
-  const { t } = useLanguage();
-  const m      = t.mandi;
+  const { t, language } = useLanguage();
+  const m = t.mandi;
   const insets = useSafeAreaInsets();
 
-  const [selectedCrop, setSelectedCrop] = useState(m.crops[0]);
-  const [prices, setPrices]             = useState(null);
-  const [advice, setAdvice]             = useState(m.defaultAdvice);
-  const [loading, setLoading]           = useState(false);
+  // cropsArray is derived from translation — updates automatically when language changes
+  const cropsArray = (m.crops || ['Gehun','Chawal','Ganna','Kapas','Makai'])
+    .slice(0, 7)
+    .map((label, i) => ({
+      label,
+      value: ['wheat','rice','sugarcane','cotton','maize','onion','potato'][i]
+    }));
 
-  // Re-sync selectedCrop when language changes
-  useEffect(() => { setSelectedCrop(m.crops[0]); }, [t]);
+  const [selectedCrop, setSelectedCrop] = useState(cropsArray[0]);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
+  const [farmerLat, setFarmerLat] = useState(30.0449);
+  const [farmerLng, setFarmerLng] = useState(72.3514);
 
-  const fetchPrices = async (crop) => {
-    setLoading(true);
+  useEffect(() => {
+    loadFarmerLocation();
+  }, []);
+
+  useEffect(() => {
+    fetchPrices(selectedCrop.value);
+  }, [selectedCrop, farmerLat, farmerLng, language]); // re-fetch when language changes
+
+  const loadFarmerLocation = async () => {
     try {
-      const { data } = await getMandiPrices(crop);
-      setPrices(data.mandis);
-      setAdvice(data.ai_advice || m.defaultAdvice);
-    } catch {
-      setPrices(null);
-      setAdvice(m.defaultAdvice);
+      const profile = JSON.parse(
+        await AsyncStorage.getItem('farmProfile') || '{}'
+      );
+      if (profile.lat) setFarmerLat(profile.lat);
+      if (profile.lng) setFarmerLng(profile.lng);
+    } catch (e) {
+      console.log('Profile load error:', e);
+    }
+  };
+
+  const fetchPrices = async (cropValue) => {
+    setLoading(true);
+    setLoadingMsg(
+      language === 'urdu' ? 'قیمتیں لوڈ ہو رہی ہیں...' :
+      language === 'english' ? 'Loading prices...' :
+      'Prices load ho rahi hain...'
+    );
+    setData(null);
+    try {
+      const { data: res } = await getMandiPrices(
+        cropValue,
+        language || 'roman_urdu',
+        farmerLat,
+        farmerLng,
+        5
+      );
+      setData(res);
+    } catch (e) {
+      console.log('Mandi error:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCrop = (crop) => {
-    setSelectedCrop(crop);
-    fetchPrices(crop);
-  };
-
-  const displayPrices = prices || MOCK_MANDIS;
-  const best = [...displayPrices].sort((a, b) => b.price - a.price)[0];
+  const prices = data?.prices || [];
+  const best = data?.best_mandi || null;
 
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
@@ -61,56 +90,153 @@ export default function MandiScreen() {
       <ScrollView contentContainerStyle={s.body}>
 
         {/* Crop chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-          {m.crops.map((crop, i) => {
-            const active = crop === selectedCrop;
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginBottom: 16 }}
+        >
+          {cropsArray.map((crop, i) => {
+            const active = crop.value === selectedCrop.value;
             return (
               <TouchableOpacity
                 key={i}
                 style={[s.chip, active && s.chipActive]}
-                onPress={() => handleCrop(crop)}
+                onPress={() => setSelectedCrop(crop)}
               >
-                <Text style={[s.chipText, active && s.chipTextActive]}>{crop}</Text>
+                <Text style={[s.chipText, active && s.chipTextActive]}>
+                  {crop.label}
+                </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
         {loading ? (
-          <ActivityIndicator color={C.maroon} size="large" style={{ marginTop: 30 }} />
-        ) : (
+          <View style={{ alignItems: 'center', marginTop: 30 }}>
+            <ActivityIndicator
+              color={C.maroon}
+              size="large"
+            />
+            <Text style={{ marginTop: 12, color: C.inkMuted, fontSize: 14 }}>{loadingMsg}</Text>
+          </View>
+        ) : data ? (
           <>
-            {/* Best price highlight */}
-            <View style={s.bestCard}>
-              <Text style={s.bestLabel}>{m.bestLabel}</Text>
-              <Text style={s.bestMandi}>{best.name}</Text>
-              <Text style={s.bestPrice}>PKR {best.price?.toLocaleString()}{m.unit}</Text>
-              <Text style={s.bestDist}>{best.dist} {m.dist}</Text>
-            </View>
+            {/* Best mandi highlight */}
+            {best && (
+              <View style={s.bestCard}>
+                <Text style={s.bestLabel}>{m.bestLabel || '🏆 SABSE ACHA BHAAV'}</Text>
+                <Text style={s.bestMandi}>{best.name}</Text>
+                <Text style={s.bestCity}>{best.city}</Text>
+                <Text style={s.bestPrice}>
+                  PKR {best.price_per_40kg?.toLocaleString()}/40kg
+                </Text>
+                <View style={s.bestDetails}>
+                  <Text style={s.bestDist}>📍 {best.distance_km} {m.dist || 'km door'}</Text>
+                  <Text style={s.bestNet}>
+                    Net: PKR {best.net_revenue_pkr?.toLocaleString()}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Govt support price */}
+            {data.govt_support_price && (
+              <View style={s.govtCard}>
+                <Text style={s.govtText}>
+                  🏩 {m.govtPrice || 'Govt support price'}: PKR {data.govt_support_price}/40kg
+                </Text>
+                {data.market_vs_support && (
+                  <Text style={s.govtSub}>{data.market_vs_support}</Text>
+                )}
+              </View>
+            )}
 
             {/* AI Advice */}
-            <View style={s.adviceCard}>
-              <Text style={s.adviceTitle}>{m.aiTitle}</Text>
-              <Text style={s.adviceText}>{advice}</Text>
-            </View>
+            {data.sell_timing_advice && (
+              <View style={s.adviceCard}>
+                <Text style={s.adviceTitle}>{m.aiTitle || '🤖 AI ki Salah'}</Text>
+                <Text style={s.adviceText}>{data.sell_timing_advice}</Text>
+                {data.wait_or_sell && (
+                  <View style={[s.sellBadge, {
+                    backgroundColor: data.wait_or_sell === 'sell_now'
+                      ? '#DCFCE7' : '#FEF3C7'
+                  }]}>
+                    <Text style={[s.sellBadgeText, {
+                      color: data.wait_or_sell === 'sell_now'
+                        ? C.green : '#D97706'
+                    }]}>
+                      {data.wait_or_sell === 'sell_now'
+                        ? `✅ ${m.sellNow || 'Abhi bechein'}`
+                        : data.wait_or_sell === 'wait_3_5_days'
+                          ? `⏳ ${m.wait3 || '3-5 din ruko'}`
+                          : `⏳ ${m.wait1 || '1 hafte ruko'}`}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Overall trend */}
+            {data.overall_trend && (
+              <View style={s.trendCard}>
+                <Text style={s.trendText}>
+                  📈 {m.trending || 'Market trend'}:{' '}
+                  <Text style={{
+                    color: data.overall_trend === 'rising' ? C.green
+                      : data.overall_trend === 'falling' ? '#DC2626'
+                        : C.ink,
+                    fontWeight: '700'
+                  }}>
+                    {data.overall_trend === 'rising' ? (m.rising || '↑ Barh raha hai')
+                      : data.overall_trend === 'falling' ? (m.falling || '↓ Gir raha hai')
+                        : (m.stable || '→ Stable hai')}
+                  </Text>
+                </Text>
+              </View>
+            )}
 
             {/* All mandis */}
-            <Text style={s.sectionLabel}>{m.allLabel}</Text>
-            {displayPrices.map((mandi, i) => (
+            <Text style={s.sectionLabel}>{m.allLabel || 'TAMAM MANDIYAAN'}</Text>
+            {/* Per-mandi trend labels */}
+            {prices.map((mandi, i) => (
               <View key={i} style={s.mandiRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={s.mandiName}>{mandi.name}</Text>
-                  <Text style={s.mandiDist}>{mandi.dist} {m.dist}</Text>
+                  <Text style={s.mandiCity}>{mandi.city}</Text>
+                  {/* distance with translated unit */}
+                  <Text style={s.mandiDist}>
+                    📍 {mandi.distance_km} {m.dist || 'km door'}
+                  </Text>
+                  {/* trend label from translations */}
+                  <Text style={s.mandiTrend}>
+                    {mandi.trend === 'rising'  ? (m.rising  || '↑ Barh raha')
+                      : mandi.trend === 'falling' ? (m.falling || '↓ Gir raha')
+                        : (m.stable || '→ Stable')}
+                  </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={s.mandiPrice}>PKR {mandi.price?.toLocaleString()}</Text>
-                  <Text style={[s.mandiChange, { color: mandi.change >= 0 ? C.green : '#DC2626' }]}>
-                    {mandi.change >= 0 ? '↑' : '↓'} {Math.abs(mandi.change)}
+                  <Text style={s.mandiPrice}>
+                    PKR {mandi.price_per_40kg?.toLocaleString()}
+                  </Text>
+                  <Text style={s.mandiUnit}>{m.unit || '/40kg'}</Text>
+                  {/* translated Net label */}
+                  <Text style={s.mandiNet}>
+                    {m.netLabel || 'Net'}: {mandi.net_revenue_pkr?.toLocaleString()}
+                  </Text>
+                  {/* translated transport label */}
+                  <Text style={[s.mandiTransport, { color: C.inkMuted }]}>
+                    🚛 {mandi.transport_cost_pkr?.toLocaleString()} {m.transportLabel || 'transport'}
                   </Text>
                 </View>
               </View>
             ))}
           </>
+        ) : (
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ color: C.inkMuted, fontSize: 14 }}>
+              {m.noData || 'Data load nahi hua. Dobara try karein.'}
+            </Text>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -118,27 +244,40 @@ export default function MandiScreen() {
 }
 
 const s = StyleSheet.create({
-  header:      { backgroundColor: C.maroon, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title:       { color: '#fff', fontWeight: '700', fontSize: 16 },
-  subtitle:    { color: C.goldLt, fontSize: 13 },
-  body:        { padding: 16, paddingBottom: 80 },
-  chip:        { backgroundColor: C.white, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 18, marginRight: 8, borderWidth: 1, borderColor: C.sep },
-  chipActive:  { backgroundColor: C.maroon, borderColor: C.maroon },
-  chipText:    { fontSize: 14, color: C.inkMuted, fontWeight: '600' },
+  header: { backgroundColor: C.maroon, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  title: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  subtitle: { color: C.goldLt, fontSize: 13 },
+  body: { padding: 16, paddingBottom: 80 },
+  chip: { backgroundColor: C.white, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 18, marginRight: 8, borderWidth: 1, borderColor: C.sep },
+  chipActive: { backgroundColor: C.maroon, borderColor: C.maroon },
+  chipText: { fontSize: 14, color: C.inkMuted, fontWeight: '600' },
   chipTextActive: { color: '#fff' },
-  bestCard:    { backgroundColor: C.maroon, borderRadius: 20, padding: 20, marginBottom: 12, borderWidth: 2, borderColor: C.gold },
-  bestLabel:   { color: C.goldLt, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  bestMandi:   { color: '#fff', fontSize: 18, fontWeight: '800', marginTop: 4 },
-  bestPrice:   { color: C.gold, fontSize: 26, fontWeight: '800', marginTop: 4 },
-  bestDist:    { color: C.goldLt, fontSize: 13, marginTop: 2 },
-  adviceCard:  { backgroundColor: '#F0FDF4', borderRadius: 14, borderWidth: 1.5, borderColor: C.green, padding: 12, marginBottom: 14 },
+  bestCard: { backgroundColor: C.maroon, borderRadius: 20, padding: 20, marginBottom: 12, borderWidth: 2, borderColor: C.gold },
+  bestLabel: { color: C.goldLt, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  bestMandi: { color: '#fff', fontSize: 18, fontWeight: '800', marginTop: 4 },
+  bestCity: { color: C.goldLt, fontSize: 13, marginTop: 2 },
+  bestPrice: { color: C.gold, fontSize: 26, fontWeight: '800', marginTop: 4 },
+  bestDetails: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  bestDist: { color: C.goldLt, fontSize: 13 },
+  bestNet: { color: C.goldLt, fontSize: 13 },
+  govtCard: { backgroundColor: '#EFF6FF', borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: '#BFDBFE' },
+  govtText: { fontSize: 13, color: '#1D4ED8', fontWeight: '600' },
+  govtSub: { fontSize: 12, color: '#3B82F6', marginTop: 4 },
+  adviceCard: { backgroundColor: '#F0FDF4', borderRadius: 14, borderWidth: 1.5, borderColor: C.green, padding: 12, marginBottom: 12 },
   adviceTitle: { fontSize: 14, fontWeight: '700', color: C.green, marginBottom: 4 },
-  adviceText:  { fontSize: 14, color: C.ink, lineHeight: 20 },
-  sectionLabel:{ fontSize: 13, fontWeight: '700', color: C.inkMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 },
-  mandiRow:    { backgroundColor: C.white, borderRadius: 12, borderWidth: 0.5, borderColor: C.sep, padding: 13, flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  mandiName:   { fontSize: 15, fontWeight: '700', color: C.ink },
-  mandiDist:   { fontSize: 13, color: C.inkMuted },
-  mandiPrice:  { fontSize: 16, fontWeight: '800', color: C.ink },
-  mandiChange: { fontSize: 13, fontWeight: '700' },
+  adviceText: { fontSize: 14, color: C.ink, lineHeight: 20 },
+  sellBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginTop: 8, alignSelf: 'flex-start' },
+  sellBadgeText: { fontSize: 13, fontWeight: '700' },
+  trendCard: { backgroundColor: C.white, borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: C.sep },
+  trendText: { fontSize: 13, color: C.ink },
+  sectionLabel: { fontSize: 13, fontWeight: '700', color: C.inkMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 },
+  mandiRow: { backgroundColor: C.white, borderRadius: 12, borderWidth: 0.5, borderColor: C.sep, padding: 13, flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
+  mandiName: { fontSize: 15, fontWeight: '700', color: C.ink },
+  mandiCity: { fontSize: 12, color: C.inkMuted },
+  mandiDist: { fontSize: 12, color: C.inkMuted, marginTop: 2 },
+  mandiTrend: { fontSize: 12, color: C.green, marginTop: 2 },
+  mandiPrice: { fontSize: 16, fontWeight: '800', color: C.ink },
+  mandiUnit: { fontSize: 11, color: C.inkMuted },
+  mandiNet: { fontSize: 12, color: C.green, fontWeight: '600', marginTop: 2 },
+  mandiTransport: { fontSize: 11, marginTop: 2 },
 });
-

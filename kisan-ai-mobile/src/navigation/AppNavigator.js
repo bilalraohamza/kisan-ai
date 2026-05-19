@@ -18,6 +18,7 @@ import WeatherScreen        from '../screens/WeatherScreen';
 import MandiScreen          from '../screens/MandiScreen';
 import FarmScreen           from '../screens/FarmScreen';
 import ServicesScreen       from '../screens/ServicesScreen';
+import SeasonScreen         from '../screens/SeasonScreen';
 import { C } from '../constants/colors';
 
 const Tab   = createBottomTabNavigator();
@@ -34,6 +35,7 @@ function MainTabs() {
     { name:'Mandi',    component:MandiScreen,    emoji:'🏪', label: t.nav.mandi    },
     { name:'Farm',     component:FarmScreen,     emoji:'🌾', label: t.nav.farm     },
     { name:'Services', component:ServicesScreen, emoji:'🛠', label: t.nav.services },
+    { name:'Season',   component:SeasonScreen,   emoji:'📅', label: t.nav.season || 'Calendar' },
   ];
 
   return (

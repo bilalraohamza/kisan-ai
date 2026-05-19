@@ -54,12 +54,7 @@ def run_crop_diagnosis_agent(
     # ------------------------------------------------------------------
     # STEP 2 — LANGUAGE INSTRUCTION
     # ------------------------------------------------------------------
-    language_instructions = {
-        "roman_urdu": "Write all farmer-facing text in Roman Urdu (Urdu words in English letters). Example: 'Aap ki fasal mein yeh bimari hai.'",
-        "urdu": "Write all farmer-facing text in Urdu script only. Example: 'آپ کی فصل میں یہ بیماری ہے۔'",
-        "english": "Write all farmer-facing text in simple English suitable for a farmer."
-    }
-    lang_instruction = language_instructions.get(language, language_instructions["roman_urdu"])
+    # Language rule is embedded directly in the treatment prompt
 
     # ------------------------------------------------------------------
     # STEP 3 — VISION PROMPT
@@ -113,7 +108,39 @@ Farm Size: {acres} acres
 Generate a complete treatment plan using medicines available in Pakistan.
 Calculate quantities based on exactly {acres} acres.
 
-Language instruction: {lang_instruction}
+ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
+The farmer has selected language: {language}
+
+You MUST write every single text field in that language.
+No mixing. No exceptions.
+
+IF language == "english":
+  Write ALL text in English only.
+  Zero Urdu words. Zero Roman Urdu.
+  Good: "Your crop has wheat rust. Apply fungicide immediately."
+  Bad: "Aap ki fasal mein zang laga hai" or "آپ کی فصل میں"
+
+IF language == "roman_urdu":
+  Write ALL text in Roman Urdu only.
+  Use Urdu words spelled in English letters.
+  Zero Urdu script characters.
+  Good: "Aap ki fasal mein gehun zang ki bimari hai. Foran fungicide lagayein."
+  Bad: "آپ کی فصل" or "Apply fungicide"
+
+IF language == "urdu":
+  Write ALL text in Urdu script only.
+  Zero English words for Urdu concepts.
+  Zero Roman Urdu.
+  Good: "آپ کی فصل میں گندم زنگ کی بیماری ہے۔ فوری فنگی سائیڈ لگائیں۔"
+  Bad: "Aap ki fasal" or "Apply fungicide"
+
+This rule applies to EVERY text field in your JSON response
+without any exception:
+- safety_precautions
+- expert_first_message
+- farmer_description
+- application_schedule
+- reasoning
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
 {{

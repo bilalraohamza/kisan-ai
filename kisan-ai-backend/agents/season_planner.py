@@ -89,12 +89,7 @@ def run_season_planner_agent(
     )
 
     # STEP 1.2 — LANGUAGE INSTRUCTION
-    language_instructions = {
-        "roman_urdu": "Write ALL farmer-facing text in Roman Urdu only. NEVER use Urdu script.",
-        "urdu": "Write ALL farmer-facing text in Urdu script only. NEVER use Roman letters for Urdu words.",
-        "english": "Write ALL farmer-facing text in simple English only."
-    }
-    lang_instruction = language_instructions.get(language, language_instructions["roman_urdu"])
+    # Language rule is embedded directly in the prompt
 
     # STEP 1.3 — CALCULATE CROP TIMELINE
     crop_timeline = CROP_TIMELINES.get(crop_type.lower())
@@ -153,7 +148,40 @@ CRITICAL RULES:
 - Always include: equipment booking, labor arrangement,
   storage booking, transport arrangement, mandi visit
 
-STRICT LANGUAGE RULE: {lang_instruction}
+ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
+The farmer has selected language: {language}
+
+You MUST write every single text field in that language.
+No mixing. No exceptions.
+
+IF language == "english":
+  Write ALL text in English only.
+  Zero Urdu words. Zero Roman Urdu.
+  Good: "Book combine harvester by 20 May for wheat harvest"
+  Bad: "Combine book karein" or "کمبائن بک کریں"
+
+IF language == "roman_urdu":
+  Write ALL text in Roman Urdu only.
+  Use Urdu words spelled in English letters.
+  Zero Urdu script characters.
+  Good: "20 May tak combine book karein, gehun katayi ke liye"
+  Bad: "کمبائن" or "Book harvester"
+
+IF language == "urdu":
+  Write ALL text in Urdu script only.
+  Zero English words for Urdu concepts.
+  Zero Roman Urdu.
+  Good: "20 مئی تک کمبائن ہارویسٹر بک کریں"
+  Bad: "Combine book karein" or "Book harvester"
+
+This rule applies to EVERY text field in your JSON response
+without any exception:
+- reason for each upcoming service
+- action for each upcoming service
+- description for each calendar event
+- harvest_summary
+- post_harvest_plan
+- reasoning
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
 {{
