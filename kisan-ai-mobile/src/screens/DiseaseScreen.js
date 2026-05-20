@@ -10,6 +10,7 @@ import ExpertCard from '../components/ExpertCard';
 import { C } from '../constants/colors';
 import { analyzeDisease } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 export default function DiseaseScreen() {
   const { t, language } = useLanguage();
@@ -68,157 +69,169 @@ export default function DiseaseScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <Text style={{ fontSize: 22 }}>🔬</Text>
-        <View>
-          <Text style={s.title}>{d.title}</Text>
-          <Text style={s.subtitle}>{d.subtitle}</Text>
+          <Text style={{ fontSize: 22 }}>🔬</Text>
+          <View>
+            <Text style={s.title}>{d.title}</Text>
+            <Text style={s.subtitle}>{d.subtitle}</Text>
+          </View>
         </View>
-      </View>
-      <AjrakBand h={10} />
+        <AjrakBand h={10} />
 
-      <ScrollView contentContainerStyle={s.body}>
-        {!result ? (
-          <>
-            <View style={s.uploadBox}>
-              {image
-                ? <Image source={{ uri: image }} style={s.preview} />
-                : <Text style={{ fontSize: 52, textAlign: 'center' }}>📷</Text>
-              }
-              {!image && (
+        <ScreenEntrance style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={s.body}>
+          {!result ? (
+            <>
+              <View style={s.uploadBox}>
+                {image
+                  ? <Image source={{ uri: image }} style={s.preview} />
+                  : <Text style={{ fontSize: 52, textAlign: 'center' }}>📷</Text>
+                }
+                {!image && (
+                  <>
+                    <Text style={s.uploadTitle}>{d.uploadTitle}</Text>
+                    <Text style={s.uploadSub}>{d.uploadSub}</Text>
+                  </>
+                )}
+                <View style={s.btnRow}>
+                  <AnimatedPressable
+                    style={[s.imgBtn, { backgroundColor: C.green }]}
+                    onPress={() => pickImage('camera')}
+                  >
+                    <Text style={s.imgBtnText}>{d.cameraBtn}</Text>
+                  </AnimatedPressable>
+                  <AnimatedPressable
+                    style={[s.imgBtn, { backgroundColor: C.sky }]}
+                    onPress={() => pickImage('gallery')}
+                  >
+                    <Text style={s.imgBtnText}>{d.galleryBtn}</Text>
+                  </AnimatedPressable>
+                </View>
+              </View>
+
+              {image && (
                 <>
-                  <Text style={s.uploadTitle}>{d.uploadTitle}</Text>
-                  <Text style={s.uploadSub}>{d.uploadSub}</Text>
+                  <View style={s.fieldsCard}>
+                    <Text style={s.fieldLabel}>{d.cropLabel || 'Fasal ka naam'}</Text>
+                    <TextInput
+                      style={s.fieldInput}
+                      value={cropType}
+                      onChangeText={setCropType}
+                      placeholder="wheat, rice, cotton..."
+                      placeholderTextColor={C.inkFaint}
+                    />
+                    <Text style={s.fieldLabel}>{d.acreLabel || 'Kanal / Acre'}</Text>
+                    <TextInput
+                      style={s.fieldInput}
+                      value={acres}
+                      onChangeText={setAcres}
+                      placeholder="5"
+                      keyboardType="numeric"
+                      placeholderTextColor={C.inkFaint}
+                    />
+                  </View>
+
+                  <AnimatedPressable
+                    style={s.analyzeBtn}
+                    onPress={analyze}
+                    disabled={loading}
+                  >
+                    {loading
+                      ? <ActivityIndicator color="#fff" />
+                      : <Text style={s.analyzeBtnText}>{d.analyzeBtn}</Text>
+                    }
+                  </AnimatedPressable>
                 </>
               )}
-              <View style={s.btnRow}>
-                <TouchableOpacity
-                  style={[s.imgBtn, { backgroundColor: C.green }]}
-                  onPress={() => pickImage('camera')}
-                >
-                  <Text style={s.imgBtnText}>{d.cameraBtn}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.imgBtn, { backgroundColor: C.sky }]}
-                  onPress={() => pickImage('gallery')}
-                >
-                  <Text style={s.imgBtnText}>{d.galleryBtn}</Text>
-                </TouchableOpacity>
+
+              <View style={s.tipsCard}>
+                <Text style={s.tipsTitle}>{d.tipsTitle}</Text>
+                {d.tips.map((tip, i) => (
+                  <Text key={i} style={s.tipText}>•  {tip}</Text>
+                ))}
               </View>
-            </View>
-
-            {image && (
-              <>
-                <View style={s.fieldsCard}>
-                  <Text style={s.fieldLabel}>{d.cropLabel || 'Fasal ka naam'}</Text>
-                  <TextInput
-                    style={s.fieldInput}
-                    value={cropType}
-                    onChangeText={setCropType}
-                    placeholder="wheat, rice, cotton..."
-                    placeholderTextColor={C.inkFaint}
-                  />
-                  <Text style={s.fieldLabel}>{d.acreLabel || 'Kanal / Acre'}</Text>
-                  <TextInput
-                    style={s.fieldInput}
-                    value={acres}
-                    onChangeText={setAcres}
-                    placeholder="5"
-                    keyboardType="numeric"
-                    placeholderTextColor={C.inkFaint}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={s.analyzeBtn}
-                  onPress={analyze}
-                  disabled={loading}
-                >
-                  {loading
-                    ? <ActivityIndicator color="#fff" />
-                    : <Text style={s.analyzeBtnText}>{d.analyzeBtn}</Text>
-                  }
-                </TouchableOpacity>
-              </>
-            )}
-
-            <View style={s.tipsCard}>
-              <Text style={s.tipsTitle}>{d.tipsTitle}</Text>
-              {d.tips.map((tip, i) => (
-                <Text key={i} style={s.tipText}>•  {tip}</Text>
-              ))}
-            </View>
-          </>
-        ) : (
-          <>
-            <View style={[s.diseaseCard, { borderColor: severityColor(result.severity) }]}>
-              <View style={s.diseaseTop}>
-                <View>
-                  <Text style={[s.diseaseName, { color: severityColor(result.severity) }]}>
-                    {language === 'urdu' 
-                      ? (result.disease_name_urdu || result.disease_name)
-                      : language === 'english'
-                      ? result.disease_name
-                      : (result.disease_name_roman_urdu || result.disease_name)}
-                  </Text>
-                  <Text style={s.diseaseScientific}>{result.disease_name}</Text>
-                </View>
-                <Text style={{ fontSize: 22 }}>🔊</Text>
-              </View>
-              <View style={s.badgeRow}>
-                <View style={[s.badge, { backgroundColor: '#FEE2E2' }]}>
-                  <Text style={[s.badgeText, { color: '#B91C1C' }]}>
-                    {result.severity}
-                  </Text>
-                </View>
-                <Text style={s.confidence}>
-                  {result.confidence_percent}% {d.confidence}
-                </Text>
-              </View>
-              <Text style={s.diseaseDesc}>
-                {language === 'english' 
-                  ? result.description 
-                  : result.farmer_description || result.description}
-              </Text>
-            </View>
-
-            {/* Expert BEFORE medicines — ethical rule */}
-            {result.expert_first_message && (
-              <View style={s.expertMsg}>
-                <Text style={s.expertMsgText}>{result.expert_first_message}</Text>
-              </View>
-            )}
-            {result.expert && <ExpertCard expert={result.expert} />}
-
-            {result.treatment && result.treatment.medicines && (
-              <View style={s.treatmentCard}>
-                <Text style={s.treatmentTitle}>{d.treatmentTitle}</Text>
-                {result.treatment.medicines.map((med, i) => (
-                  <View key={i} style={s.medRow}>
-                    <Text style={s.medName}>{med.name}</Text>
-                    <Text style={s.medGeneric}>{med.type}</Text>
-                    <Text style={s.medQty}>
-                      {med.total_quantity} · ~PKR {med.total_cost_pkr}
+            </>
+          ) : (
+            <>
+              <CardEntrance delay={100}>
+                <View style={[s.diseaseCard, { borderColor: severityColor(result.severity) }]}>
+                  <View style={s.diseaseTop}>
+                    <View>
+                      <Text style={[s.diseaseName, { color: severityColor(result.severity) }]}>
+                        {language === 'urdu' 
+                          ? (result.disease_name_urdu || result.disease_name)
+                          : language === 'english'
+                          ? result.disease_name
+                          : (result.disease_name_roman_urdu || result.disease_name)}
+                      </Text>
+                      <Text style={s.diseaseScientific}>{result.disease_name}</Text>
+                    </View>
+                    <Text style={{ fontSize: 22 }}>🔊</Text>
+                  </View>
+                  <View style={s.badgeRow}>
+                    <View style={[s.badge, { backgroundColor: '#FEE2E2' }]}>
+                      <Text style={[s.badgeText, { color: '#B91C1C' }]}>
+                        {result.severity}
+                      </Text>
+                    </View>
+                    <Text style={s.confidence}>
+                      {result.confidence_percent}% {d.confidence}
                     </Text>
                   </View>
-                ))}
-                <View style={s.safetyNote}>
-                  <Text style={s.safetyText}>
-                    {result.treatment.safety_note}
+                  <Text style={s.diseaseDesc}>
+                    {language === 'english' 
+                      ? result.description 
+                      : result.farmer_description || result.description}
                   </Text>
                 </View>
-              </View>
-            )}
+              </CardEntrance>
 
-            <TouchableOpacity
-              style={s.resetBtn}
-              onPress={() => { setImage(null); setResult(null); }}
-            >
-              <Text style={s.resetText}>{d.resetBtn}</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </ScrollView>
-    </View>
+              {/* Expert BEFORE medicines — ethical rule */}
+              {result.expert_first_message && (
+                <CardEntrance delay={200}>
+                  <View style={s.expertMsg}>
+                    <Text style={s.expertMsgText}>{result.expert_first_message}</Text>
+                  </View>
+                </CardEntrance>
+              )}
+              {result.expert && (
+                <CardEntrance delay={250}>
+                  <ExpertCard expert={result.expert} />
+                </CardEntrance>
+              )}
+
+              {result.treatment && result.treatment.medicines && (
+                <CardEntrance delay={300}>
+                  <View style={s.treatmentCard}>
+                    <Text style={s.treatmentTitle}>{d.treatmentTitle}</Text>
+                    {result.treatment.medicines.map((med, i) => (
+                      <View key={i} style={s.medRow}>
+                        <Text style={s.medName}>{med.name}</Text>
+                        <Text style={s.medGeneric}>{med.type}</Text>
+                        <Text style={s.medQty}>
+                          {med.total_quantity} · ~PKR {med.total_cost_pkr}
+                        </Text>
+                      </View>
+                    ))}
+                    <View style={s.safetyNote}>
+                      <Text style={s.safetyText}>
+                        {result.treatment.safety_note}
+                      </Text>
+                    </View>
+                  </View>
+                </CardEntrance>
+              )}
+
+              <AnimatedPressable
+                style={s.resetBtn}
+                onPress={() => { setImage(null); setResult(null); }}
+              >
+                <Text style={s.resetText}>{d.resetBtn}</Text>
+              </AnimatedPressable>
+            </>
+          )}
+          </ScrollView>
+        </ScreenEntrance>
+      </View>
   );
 }
 

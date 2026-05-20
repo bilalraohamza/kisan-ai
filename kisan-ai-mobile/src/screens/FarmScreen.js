@@ -10,6 +10,7 @@ import { C } from '../constants/colors';
 import { saveFarm, getSessionId } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { ScreenEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const CROP_OPTIONS_BY_LANG = {
   roman_urdu: [
@@ -151,143 +152,145 @@ export default function FarmScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <Text style={{ fontSize: 22 }}>🌾</Text>
-        <View>
-          <Text style={s.title}>{f.title}</Text>
-          <Text style={s.subtitle}>{f.subtitle}</Text>
-        </View>
-      </View>
-      <AjrakBand h={10} />
-
-      <ScrollView contentContainerStyle={s.body}>
-
-        {/* Verified badge */}
-        <View style={s.verifiedCard}>
-          <Text style={s.verifiedText}>{f.verified || '✓ Verified Kisan'}</Text>
-          {user && <Text style={s.userName}>👤 {user.name}</Text>}
-        </View>
-
-        {/* Language */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>{f.langLabel || '🌐 Zaban ka Intikhab'}</Text>
-          <Text style={s.hint}>
-            {f.langHint || 'Zaban badalne se poori app mein text badal jayega'}
-          </Text>
-          <View style={s.langRow}>
-            {LANG_OPTIONS.map(opt => {
-              const active = language === opt.key;
-              return (
-                <TouchableOpacity
-                  key={opt.key}
-                  style={[s.langBtn, active && s.langBtnActive]}
-                  onPress={() => selectLanguage(opt.key)}
-                >
-                  <Text style={[s.langBtnText, active && s.langBtnTextActive]}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <Text style={{ fontSize: 22 }}>🌾</Text>
+          <View>
+            <Text style={s.title}>{f.title}</Text>
+            <Text style={s.subtitle}>{f.subtitle}</Text>
           </View>
         </View>
+        <AjrakBand h={10} />
 
-        {/* Crop */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>{f.cropLabel || '🌾 Fasal ka Intikhab'}</Text>
-          <View style={s.cropGrid}>
-            {/* Crop buttons — driven by t.farm.crops array */}
-            {['wheat','rice','sugarcane','cotton','maize','other'].map((val, i) => {
-              const active = selectedCrop?.value === val;
-              const CROP_VALUES = ['wheat','rice','sugarcane','cotton','maize','other'];
-              const cropLabel = (f.crops && f.crops[i]) ? f.crops[i] : CROP_VALUES[i];
-              return (
-                <TouchableOpacity
-                  key={i}
-                  style={[s.cropBtn, active && s.cropBtnActive]}
-                  onPress={() => setSelectedCrop({ value: val, label: cropLabel })}
-                >
-                  <Text style={[s.cropBtnText, active && s.cropBtnTextActive]}>
-                    {cropLabel}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+        <ScreenEntrance style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={s.body}>
+
+          {/* Verified badge */}
+          <View style={s.verifiedCard}>
+            <Text style={s.verifiedText}>{f.verified || '✓ Verified Kisan'}</Text>
+            {user && <Text style={s.userName}>👤 {user.name}</Text>}
           </View>
-        </View>
 
-        {/* Farm Info */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>{f.infoLabel || '📋 Farm ki Maloomat'}</Text>
-
-          <Text style={s.inputLabel}>{f.acreLabel || 'Rukba (Acre)'}</Text>
-          <TextInput
-            style={s.input}
-            value={acres}
-            onChangeText={setAcres}
-            placeholder="e.g. 5"
-            placeholderTextColor={C.inkFaint}
-            keyboardType="numeric"
-          />
-
-          <Text style={s.inputLabel}>{f.cityLabel || 'Sheher ya Ilaaqa'}</Text>
-          <TextInput
-            style={s.input}
-            value={city}
-            onChangeText={(text) => {
-              setCity(text);
-              setResolvedLocation(null);
-            }}
-            placeholder="e.g. Vehari, Multan, Lahore..."
-            placeholderTextColor={C.inkFaint}
-          />
-
-          {/* Show resolved location after save */}
-          {resolvedLocation && resolvedLocation.lat !== 0 && (
-            <View style={s.locationResolved}>
-              <Text style={s.locationResolvedText}>
-                {f.locationFound || '✅ Location milgayi:'} {resolvedLocation.address}
-              </Text>
-              <Text style={s.locationCoords}>
-                {resolvedLocation.lat.toFixed(4)}, {resolvedLocation.lng.toFixed(4)}
-              </Text>
+          {/* Language */}
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>{f.langLabel || '🌐 Zaban ka Intikhab'}</Text>
+            <Text style={s.hint}>
+              {f.langHint || 'Zaban badalne se poori app mein text badal jayega'}
+            </Text>
+            <View style={s.langRow}>
+              {LANG_OPTIONS.map(opt => {
+                const active = language === opt.key;
+                return (
+                  <AnimatedPressable
+                    key={opt.key}
+                    style={[s.langBtn, active && s.langBtnActive, { flex: 1 }]}
+                    onPress={() => selectLanguage(opt.key)}
+                  >
+                    <Text style={[s.langBtnText, active && s.langBtnTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </AnimatedPressable>
+                );
+              })}
             </View>
-          )}
-        </View>
+          </View>
 
-        {/* Save Button */}
-        <TouchableOpacity
-          style={[
-            s.saveBtn,
-            saved && s.saveBtnSaved,
-            loading && { opacity: 0.7 }
-          ]}
-          onPress={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ActivityIndicator color="#fff" size="small" />
+          {/* Crop */}
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>{f.cropLabel || '🌾 Fasal ka Intikhab'}</Text>
+            <View style={s.cropGrid}>
+              {/* Crop buttons — driven by t.farm.crops array */}
+              {['wheat','rice','sugarcane','cotton','maize','other'].map((val, i) => {
+                const active = selectedCrop?.value === val;
+                const CROP_VALUES = ['wheat','rice','sugarcane','cotton','maize','other'];
+                const cropLabel = (f.crops && f.crops[i]) ? f.crops[i] : CROP_VALUES[i];
+                return (
+                  <AnimatedPressable
+                    key={i}
+                    style={[s.cropBtn, active && s.cropBtnActive]}
+                    onPress={() => setSelectedCrop({ value: val, label: cropLabel })}
+                  >
+                    <Text style={[s.cropBtnText, active && s.cropBtnTextActive]}>
+                      {cropLabel}
+                    </Text>
+                  </AnimatedPressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Farm Info */}
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>{f.infoLabel || '📋 Farm ki Maloomat'}</Text>
+
+            <Text style={s.inputLabel}>{f.acreLabel || 'Rukba (Acre)'}</Text>
+            <TextInput
+              style={s.input}
+              value={acres}
+              onChangeText={setAcres}
+              placeholder="e.g. 5"
+              placeholderTextColor={C.inkFaint}
+              keyboardType="numeric"
+            />
+
+            <Text style={s.inputLabel}>{f.cityLabel || 'Sheher ya Ilaaqa'}</Text>
+            <TextInput
+              style={s.input}
+              value={city}
+              onChangeText={(text) => {
+                setCity(text);
+                setResolvedLocation(null);
+              }}
+              placeholder="e.g. Vehari, Multan, Lahore..."
+              placeholderTextColor={C.inkFaint}
+            />
+
+            {/* Show resolved location after save */}
+            {resolvedLocation && resolvedLocation.lat !== 0 && (
+              <View style={s.locationResolved}>
+                <Text style={s.locationResolvedText}>
+                  {f.locationFound || '✅ Location milgayi:'} {resolvedLocation.address}
+                </Text>
+                <Text style={s.locationCoords}>
+                  {resolvedLocation.lat.toFixed(4)}, {resolvedLocation.lng.toFixed(4)}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Save Button */}
+          <AnimatedPressable
+            style={[
+              s.saveBtn,
+              saved && s.saveBtnSaved,
+              loading && { opacity: 0.7 }
+            ]}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator color="#fff" size="small" />
+                <Text style={s.saveBtnText}>
+                  {geocoding ? (f.locating || 'Location dhundh rahe hain...') : (f.saving || 'Save ho raha hai...')}
+                </Text>
+              </View>
+            ) : (
               <Text style={s.saveBtnText}>
-                {geocoding ? (f.locating || 'Location dhundh rahe hain...') : (f.saving || 'Save ho raha hai...')}
+                {saved ? (f.savedBtn || '✅ Save ho gaya!') : (f.saveBtn || '💾 Profile Save Karein')}
+              </Text>
+            )}
+          </AnimatedPressable>
+
+          {saved && (
+            <View style={s.successCard}>
+              <Text style={s.successText}>
+                {f.successMsg || '✅ Aap ka profile save ho gaya. Ab chat mein aap ki fasal aur location automatically use hogi.'}
               </Text>
             </View>
-          ) : (
-            <Text style={s.saveBtnText}>
-              {saved ? (f.savedBtn || '✅ Save ho gaya!') : (f.saveBtn || '💾 Profile Save Karein')}
-            </Text>
           )}
-        </TouchableOpacity>
 
-        {saved && (
-          <View style={s.successCard}>
-            <Text style={s.successText}>
-              {f.successMsg || '✅ Aap ka profile save ho gaya. Ab chat mein aap ki fasal aur location automatically use hogi.'}
-            </Text>
-          </View>
-        )}
-
-      </ScrollView>
-    </View>
+          </ScrollView>
+        </ScreenEntrance>
+      </View>
   );
 }
 

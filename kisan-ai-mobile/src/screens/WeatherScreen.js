@@ -8,6 +8,7 @@ import { C } from '../constants/colors';
 import { getWeather } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 // ── Rain icon helper ──────────────────────────────────────────────────────────
 const RAIN_ICON = (rain) => {
@@ -136,164 +137,174 @@ export default function WeatherScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       {/* ── Header ── */}
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ fontSize: 22 }}>☁️</Text>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={{ fontSize: 22 }}>☁️</Text>
+            <View>
+              <Text style={s.title}>{w.title}</Text>
+              <Text style={s.subtitle}>
+                {displayLocation}
+                {cropLabel ? ` · ${cropLabel}` : ''}
+              </Text>
+            </View>
+          </View>
           <View>
-            <Text style={s.title}>{w.title}</Text>
-            <Text style={s.subtitle}>
-              {displayLocation}
-              {cropLabel ? ` · ${cropLabel}` : ''}
+            <Text style={s.temp}>
+              {forecast[0]?.temp_max || '--'}°
+            </Text>
+            <Text style={s.tempLabel}>
+              {RAIN_ICON(forecast[0]?.rain_probability || 0)}
             </Text>
           </View>
         </View>
-        <View>
-          <Text style={s.temp}>
-            {forecast[0]?.temp_max || '--'}°
-          </Text>
-          <Text style={s.tempLabel}>
-            {RAIN_ICON(forecast[0]?.rain_probability || 0)}
-          </Text>
-        </View>
-      </View>
-      <AjrakBand h={10} />
+        <AjrakBand h={10} />
 
-      {/* ── Body ── */}
-      {loading ? (
-        <View style={s.loader}>
-          <ActivityIndicator color={C.maroon} size="large" />
-          <Text style={{ marginTop: 10, color: C.inkMuted }}>
-            {w.loadingText || 'Mausam ki maloomat la rahe hain...'}
-          </Text>
-        </View>
-
-      ) : error ? (
-        <View style={s.loader}>
-          <Text style={{ color: C.maroon, fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
-            {language === 'urdu' ? 'لوکیشن نہیں ملی۔ دوبارہ کوشش کریں۔'
-             : language === 'english' ? 'Location not found. Please try again.'
-             : 'Location nahi mili. Dobara try karein.'}
-          </Text>
-          <TouchableOpacity
-            style={s.retryBtn}
-            onPress={() => {
-              setError(false);
-              setLoading(true);
-              loadCropAndWeather();
-            }}
-          >
-            <Text style={s.retryBtnText}>
-              {language === 'urdu' ? 'دوبارہ کوشش' 
-               : language === 'english' ? 'Retry'
-               : 'Dobara Try Karein'}
+        <ScreenEntrance style={{ flex: 1 }}>
+          {/* ── Body ── */}
+          {loading ? (
+          <View style={s.loader}>
+            <ActivityIndicator color={C.maroon} size="large" />
+            <Text style={{ marginTop: 10, color: C.inkMuted }}>
+              {w.loadingText || 'Mausam ki maloomat la rahe hain...'}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-      ) : (
-        <ScrollView contentContainerStyle={s.body}>
-          <UrgentBanner message={data?.urgent_alert} autoSpeak={false} language={language} />
-
-          {/* Risk card */}
-          {data?.weekly_risk && (
-            <View style={[s.riskCard, {
-              backgroundColor: data.weekly_risk === 'high' ? '#FEE2E2'
-                : data.weekly_risk === 'medium' ? '#FEF3C7'
-                  : '#DCFCE7'
-            }]}>
-              <Text style={s.riskText}>
-                {w.riskLabel || 'Is hafte ka khatra'}{': '}
-                <Text style={{ fontWeight: '800' }}>
-                  {data.weekly_risk === 'high' ? (w.riskHigh || 'Zyada')
-                    : data.weekly_risk === 'medium' ? (w.riskMedium || w.riskMed || 'Darmiyana')
-                      : (w.riskLow || 'Kam')}
-                </Text>
+        ) : error ? (
+          <View style={s.loader}>
+            <Text style={{ color: C.maroon, fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
+              {language === 'urdu' ? 'لوکیشن نہیں ملی۔ دوبارہ کوشش کریں۔'
+               : language === 'english' ? 'Location not found. Please try again.'
+               : 'Location nahi mili. Dobara try karein.'}
+            </Text>
+            <AnimatedPressable
+              style={s.retryBtn}
+              onPress={() => {
+                setError(false);
+                setLoading(true);
+                loadCropAndWeather();
+              }}
+            >
+              <Text style={s.retryBtnText}>
+                {language === 'urdu' ? 'دوبارہ کوشش' 
+                 : language === 'english' ? 'Retry'
+                 : 'Dobara Try Karein'}
               </Text>
-              {data.best_harvest_window && (
-                <Text style={s.harvestText}>
-                  🌾 {w.harvestLabel || w.bestHarvest || 'Behtar katayi'}: {data.best_harvest_window}
-                </Text>
-              )}
-            </View>
-          )}
+            </AnimatedPressable>
+          </View>
 
-          {/* Action today */}
-          {data?.action_today && (
-            <View style={s.actionCard}>
-              <Text style={s.actionTitle}>
-                ⚡ {w.actionTitle || w.actionToday || 'Aaj kya karein'}
-              </Text>
-              <Text style={s.actionText}>{data.action_today}</Text>
-            </View>
-          )}
+        ) : (
+          <ScrollView contentContainerStyle={s.body}>
+            <UrgentBanner message={data?.urgent_alert} autoSpeak={false} language={language} />
 
-          {/* ── 5-day forecast chips ── */}
-          <Text style={s.sectionLabel}>{w.forecastLabel}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: 16 }}
-          >
-            {forecast.map((day, i) => (
-              <View key={i} style={[s.dayCard, {
-                backgroundColor: day.rain_probability > 50 ? '#EFF6FF' : '#F0FDF4'
-              }]}>
-                {/* ── FIX: language-aware short day name ── */}
-                <Text style={s.dayName}>
-                  {getDayName(day.date, language)}
-                </Text>
-                <Text style={{ fontSize: 26 }}>
-                  {RAIN_ICON(day.rain_probability)}
-                </Text>
-                <Text style={[s.rain, {
-                  color: day.rain_probability > 50 ? '#1D4ED8' : C.green
+            {/* Risk card */}
+            {data?.weekly_risk && (
+              <CardEntrance delay={100}>
+                <View style={[s.riskCard, {
+                  backgroundColor: data.weekly_risk === 'high' ? '#FEE2E2'
+                    : data.weekly_risk === 'medium' ? '#FEF3C7'
+                      : '#DCFCE7'
                 }]}>
-                  {day.rain_probability}% 💧
-                </Text>
-                <Text style={s.dayTemp}>
-                  {day.temp_max}° / {day.temp_min}°
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
+                  <Text style={s.riskText}>
+                    {w.riskLabel || 'Is hafte ka khatra'}{': '}
+                    <Text style={{ fontWeight: '800' }}>
+                      {data.weekly_risk === 'high' ? (w.riskHigh || 'Zyada')
+                        : data.weekly_risk === 'medium' ? (w.riskMedium || w.riskMed || 'Darmiyana')
+                          : (w.riskLow || 'Kam')}
+                    </Text>
+                  </Text>
+                  {data.best_harvest_window && (
+                    <Text style={s.harvestText}>
+                      🌾 {w.harvestLabel || w.bestHarvest || 'Behtar katayi'}: {data.best_harvest_window}
+                    </Text>
+                  )}
+                </View>
+              </CardEntrance>
+            )}
 
-          {/* ── Advisory rows ── */}
-          <Text style={s.sectionLabel}>{w.advisoryLabel}</Text>
-          {forecast.map((day, i) => (
-            <View key={i} style={[s.advisoryRow, {
-              borderLeftWidth: 3,
-              borderLeftColor: day.rain_probability > 70 ? '#B91C1C'
-                : day.rain_probability > 40 ? '#D97706'
-                  : C.green
-            }]}>
-              <Text style={{ fontSize: 22 }}>
-                {RAIN_ICON(day.rain_probability)}
-              </Text>
-              <View style={{ flex: 1 }}>
-                <View style={s.advisoryHeader}>
-                  {/* ── FIX: language-aware full date string ── */}
-                  <Text style={s.advisoryDay}>
-                    {getFullDayName(day.date, language)}
+            {/* Action today */}
+            {data?.action_today && (
+              <CardEntrance delay={150}>
+                <View style={s.actionCard}>
+                  <Text style={s.actionTitle}>
+                    ⚡ {w.actionTitle || w.actionToday || 'Aaj kya karein'}
                   </Text>
-                  <Text style={s.advisoryTemp}>
-                    {day.temp_max}°/{day.temp_min}°
-                  </Text>
+                  <Text style={s.actionText}>{data.action_today}</Text>
                 </View>
-                <Text style={s.advisoryText}>{day.farming_advisory}</Text>
-                <View style={s.detailRow}>
-                  <Text style={s.detailText}>💧 {day.rain_probability}%</Text>
-                  {day.humidity && (
-                    <Text style={s.detailText}>💦 {day.humidity}%</Text>
-                  )}
-                  {day.wind_speed && (
-                    <Text style={s.detailText}>💨 {day.wind_speed} km/h</Text>
-                  )}
+              </CardEntrance>
+            )}
+
+            {/* ── 5-day forecast chips ── */}
+            <Text style={s.sectionLabel}>{w.forecastLabel}</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 16 }}
+            >
+              {forecast.map((day, i) => (
+                <CardEntrance key={i} delay={200 + i * 50}>
+                  <View style={[s.dayCard, {
+                    backgroundColor: day.rain_probability > 50 ? '#EFF6FF' : '#F0FDF4'
+                  }]}>
+                    {/* ── FIX: language-aware short day name ── */}
+                    <Text style={s.dayName}>
+                      {getDayName(day.date, language)}
+                    </Text>
+                    <Text style={{ fontSize: 26 }}>
+                      {RAIN_ICON(day.rain_probability)}
+                    </Text>
+                    <Text style={[s.rain, {
+                      color: day.rain_probability > 50 ? '#1D4ED8' : C.green
+                    }]}>
+                      {day.rain_probability}% 💧
+                    </Text>
+                    <Text style={s.dayTemp}>
+                      {day.temp_max}° / {day.temp_min}°
+                    </Text>
+                  </View>
+                </CardEntrance>
+              ))}
+            </ScrollView>
+
+            {/* ── Advisory rows ── */}
+            <Text style={s.sectionLabel}>{w.advisoryLabel}</Text>
+            {forecast.map((day, i) => (
+              <CardEntrance key={i} delay={300 + i * 50}>
+                <View style={[s.advisoryRow, {
+                  borderLeftWidth: 3,
+                  borderLeftColor: day.rain_probability > 70 ? '#B91C1C'
+                    : day.rain_probability > 40 ? '#D97706'
+                      : C.green
+                }]}>
+                  <Text style={{ fontSize: 22 }}>
+                    {RAIN_ICON(day.rain_probability)}
+                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <View style={s.advisoryHeader}>
+                      {/* ── FIX: language-aware full date string ── */}
+                      <Text style={s.advisoryDay}>
+                        {getFullDayName(day.date, language)}
+                      </Text>
+                      <Text style={s.advisoryTemp}>
+                        {day.temp_max}°/{day.temp_min}°
+                      </Text>
+                    </View>
+                    <Text style={s.advisoryText}>{day.farming_advisory}</Text>
+                    <View style={s.detailRow}>
+                      <Text style={s.detailText}>💧 {day.rain_probability}%</Text>
+                      {day.humidity && (
+                        <Text style={s.detailText}>💦 {day.humidity}%</Text>
+                      )}
+                      {day.wind_speed && (
+                        <Text style={s.detailText}>💨 {day.wind_speed} km/h</Text>
+                      )}
+                    </View>
                 </View>
               </View>
-            </View>
+            </CardEntrance>
           ))}
-        </ScrollView>
-      )}
-    </View>
+          </ScrollView>
+        )}
+        </ScreenEntrance>
+      </View>
   );
 }
 

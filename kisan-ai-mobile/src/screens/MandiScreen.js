@@ -6,6 +6,7 @@ import { C } from '../constants/colors';
 import { getMandiPrices } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 // We will generate CROPS array dynamically inside the component
 
@@ -90,167 +91,179 @@ export default function MandiScreen({ route }) {
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <Text style={{ fontSize: 22 }}>🏪</Text>
-        <View>
-          <Text style={s.title}>{m.title}</Text>
-          <Text style={s.subtitle}>{m.subtitle}</Text>
-        </View>
-      </View>
-      <AjrakBand h={10} />
-
-      <ScrollView contentContainerStyle={s.body}>
-
-        {/* Crop chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 16 }}
-        >
-          {cropsArray.map((crop, i) => {
-            const active = crop.value === selectedCrop.value;
-            return (
-              <TouchableOpacity
-                key={i}
-                style={[s.chip, active && s.chipActive]}
-                onPress={() => setSelectedCrop(crop)}
-              >
-                <Text style={[s.chipText, active && s.chipTextActive]}>
-                  {crop.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {loading ? (
-          <View style={{ alignItems: 'center', marginTop: 30 }}>
-            <ActivityIndicator
-              color={C.maroon}
-              size="large"
-            />
-            <Text style={{ marginTop: 12, color: C.inkMuted, fontSize: 14 }}>{loadingMsg}</Text>
+          <Text style={{ fontSize: 22 }}>🏪</Text>
+          <View>
+            <Text style={s.title}>{m.title}</Text>
+            <Text style={s.subtitle}>{m.subtitle}</Text>
           </View>
-        ) : data ? (
-          <>
-            {/* Best mandi highlight */}
-            {best && (
-              <View style={s.bestCard}>
-                <Text style={s.bestLabel}>{m.bestLabel || '🏆 SABSE ACHA BHAAV'}</Text>
-                <Text style={s.bestMandi}>{best.name}</Text>
-                <Text style={s.bestCity}>{best.city}</Text>
-                <Text style={s.bestPrice}>
-                  PKR {best.price_per_40kg?.toLocaleString()}/40kg
-                </Text>
-                <View style={s.bestDetails}>
-                  <Text style={s.bestDist}>📍 {best.distance_km} {m.dist || 'km door'}</Text>
-                  <Text style={s.bestNet}>
-                    Net: PKR {best.net_revenue_pkr?.toLocaleString()}
+        </View>
+        <AjrakBand h={10} />
+
+        <ScreenEntrance style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={s.body}>
+
+          {/* Crop chips */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 16 }}
+          >
+            {cropsArray.map((crop, i) => {
+              const active = crop.value === selectedCrop.value;
+              return (
+                <AnimatedPressable
+                  key={i}
+                  style={[s.chip, active && s.chipActive]}
+                  onPress={() => setSelectedCrop(crop)}
+                >
+                  <Text style={[s.chipText, active && s.chipTextActive]}>
+                    {crop.label}
                   </Text>
-                </View>
-              </View>
-            )}
+                </AnimatedPressable>
+              );
+            })}
+          </ScrollView>
 
-            {/* Govt support price */}
-            {data.govt_support_price && (
-              <View style={s.govtCard}>
-                <Text style={s.govtText}>
-                  🏩 {m.govtPrice || 'Govt support price'}: PKR {data.govt_support_price}/40kg
-                </Text>
-                {data.market_vs_support && (
-                  <Text style={s.govtSub}>{data.market_vs_support}</Text>
-                )}
-              </View>
-            )}
+          {loading ? (
+            <View style={{ alignItems: 'center', marginTop: 30 }}>
+              <ActivityIndicator
+                color={C.maroon}
+                size="large"
+              />
+              <Text style={{ marginTop: 12, color: C.inkMuted, fontSize: 14 }}>{loadingMsg}</Text>
+            </View>
+          ) : data ? (
+            <>
+              {/* Best mandi highlight */}
+              {best && (
+                <CardEntrance delay={100}>
+                  <View style={s.bestCard}>
+                    <Text style={s.bestLabel}>{m.bestLabel || '🏆 SABSE ACHA BHAAV'}</Text>
+                    <Text style={s.bestMandi}>{best.name}</Text>
+                    <Text style={s.bestCity}>{best.city}</Text>
+                    <Text style={s.bestPrice}>
+                      PKR {best.price_per_40kg?.toLocaleString()}/40kg
+                    </Text>
+                    <View style={s.bestDetails}>
+                      <Text style={s.bestDist}>📍 {best.distance_km} {m.dist || 'km door'}</Text>
+                      <Text style={s.bestNet}>
+                        Net: PKR {best.net_revenue_pkr?.toLocaleString()}
+                      </Text>
+                    </View>
+                  </View>
+                </CardEntrance>
+              )}
 
-            {/* AI Advice */}
-            {data.sell_timing_advice && (
-              <View style={s.adviceCard}>
-                <Text style={s.adviceTitle}>{m.aiTitle || '🤖 AI ki Salah'}</Text>
-                <Text style={s.adviceText}>{data.sell_timing_advice}</Text>
-                {data.wait_or_sell && (
-                  <View style={[s.sellBadge, {
-                    backgroundColor: data.wait_or_sell === 'sell_now'
-                      ? '#DCFCE7' : '#FEF3C7'
-                  }]}>
-                    <Text style={[s.sellBadgeText, {
-                      color: data.wait_or_sell === 'sell_now'
-                        ? C.green : '#D97706'
-                    }]}>
-                      {data.wait_or_sell === 'sell_now'
-                        ? `✅ ${m.sellNow || 'Abhi bechein'}`
-                        : data.wait_or_sell === 'wait_3_5_days'
-                          ? `⏳ ${m.wait3 || '3-5 din ruko'}`
-                          : `⏳ ${m.wait1 || '1 hafte ruko'}`}
+              {/* Govt support price */}
+              {data.govt_support_price && (
+                <CardEntrance delay={150}>
+                  <View style={s.govtCard}>
+                    <Text style={s.govtText}>
+                      🏩 {m.govtPrice || 'Govt support price'}: PKR {data.govt_support_price}/40kg
+                    </Text>
+                    {data.market_vs_support && (
+                      <Text style={s.govtSub}>{data.market_vs_support}</Text>
+                    )}
+                  </View>
+                </CardEntrance>
+              )}
+
+              {/* AI Advice */}
+              {data.sell_timing_advice && (
+                <CardEntrance delay={200}>
+                  <View style={s.adviceCard}>
+                    <Text style={s.adviceTitle}>{m.aiTitle || '🤖 AI ki Salah'}</Text>
+                    <Text style={s.adviceText}>{data.sell_timing_advice}</Text>
+                    {data.wait_or_sell && (
+                      <View style={[s.sellBadge, {
+                        backgroundColor: data.wait_or_sell === 'sell_now'
+                          ? '#DCFCE7' : '#FEF3C7'
+                      }]}>
+                        <Text style={[s.sellBadgeText, {
+                          color: data.wait_or_sell === 'sell_now'
+                            ? C.green : '#D97706'
+                        }]}>
+                          {data.wait_or_sell === 'sell_now'
+                            ? `✅ ${m.sellNow || 'Abhi bechein'}`
+                            : data.wait_or_sell === 'wait_3_5_days'
+                              ? `⏳ ${m.wait3 || '3-5 din ruko'}`
+                              : `⏳ ${m.wait1 || '1 hafte ruko'}`}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </CardEntrance>
+              )}
+
+              {/* Overall trend */}
+              {data.overall_trend && (
+                <CardEntrance delay={250}>
+                  <View style={s.trendCard}>
+                    <Text style={s.trendText}>
+                      📈 {m.trending || 'Market trend'}:{' '}
+                      <Text style={{
+                        color: data.overall_trend === 'rising' ? C.green
+                          : data.overall_trend === 'falling' ? '#DC2626'
+                            : C.ink,
+                        fontWeight: '700'
+                      }}>
+                        {data.overall_trend === 'rising' ? (m.rising || '↑ Barh raha hai')
+                          : data.overall_trend === 'falling' ? (m.falling || '↓ Gir raha hai')
+                            : (m.stable || '→ Stable hai')}
+                      </Text>
                     </Text>
                   </View>
-                )}
-              </View>
-            )}
+                </CardEntrance>
+              )}
 
-            {/* Overall trend */}
-            {data.overall_trend && (
-              <View style={s.trendCard}>
-                <Text style={s.trendText}>
-                  📈 {m.trending || 'Market trend'}:{' '}
-                  <Text style={{
-                    color: data.overall_trend === 'rising' ? C.green
-                      : data.overall_trend === 'falling' ? '#DC2626'
-                        : C.ink,
-                    fontWeight: '700'
-                  }}>
-                    {data.overall_trend === 'rising' ? (m.rising || '↑ Barh raha hai')
-                      : data.overall_trend === 'falling' ? (m.falling || '↓ Gir raha hai')
-                        : (m.stable || '→ Stable hai')}
-                  </Text>
-                </Text>
-              </View>
-            )}
-
-            {/* All mandis */}
-            <Text style={s.sectionLabel}>{m.allLabel || 'TAMAM MANDIYAAN'}</Text>
-            {/* Per-mandi trend labels */}
-            {prices.map((mandi, i) => (
-              <View key={i} style={s.mandiRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.mandiName}>{mandi.name}</Text>
-                  <Text style={s.mandiCity}>{mandi.city}</Text>
-                  {/* distance with translated unit */}
-                  <Text style={s.mandiDist}>
-                    📍 {mandi.distance_km} {m.dist || 'km door'}
-                  </Text>
-                  {/* trend label from translations */}
-                  <Text style={s.mandiTrend}>
-                    {mandi.trend === 'rising'  ? (m.rising  || '↑ Barh raha')
-                      : mandi.trend === 'falling' ? (m.falling || '↓ Gir raha')
-                        : (m.stable || '→ Stable')}
-                  </Text>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={s.mandiPrice}>
-                    PKR {mandi.price_per_40kg?.toLocaleString()}
-                  </Text>
-                  <Text style={s.mandiUnit}>{m.unit || '/40kg'}</Text>
-                  {/* translated Net label */}
-                  <Text style={s.mandiNet}>
-                    {m.netLabel || 'Net'}: {mandi.net_revenue_pkr?.toLocaleString()}
-                  </Text>
-                  {/* translated transport label */}
-                  <Text style={[s.mandiTransport, { color: C.inkMuted }]}>
-                    🚛 {mandi.transport_cost_pkr?.toLocaleString()} {m.transportLabel || 'transport'}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </>
-        ) : (
-          <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <Text style={{ color: C.inkMuted, fontSize: 14 }}>
-              {m.noData || 'Data load nahi hua. Dobara try karein.'}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
+              {/* All mandis */}
+              <Text style={s.sectionLabel}>{m.allLabel || 'TAMAM MANDIYAAN'}</Text>
+              {/* Per-mandi trend labels */}
+              {prices.map((mandi, i) => (
+                <CardEntrance key={i} delay={300 + i * 50}>
+                  <View style={s.mandiRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.mandiName}>{mandi.name}</Text>
+                      <Text style={s.mandiCity}>{mandi.city}</Text>
+                      {/* distance with translated unit */}
+                      <Text style={s.mandiDist}>
+                        📍 {mandi.distance_km} {m.dist || 'km door'}
+                      </Text>
+                      {/* trend label from translations */}
+                      <Text style={s.mandiTrend}>
+                        {mandi.trend === 'rising'  ? (m.rising  || '↑ Barh raha')
+                          : mandi.trend === 'falling' ? (m.falling || '↓ Gir raha')
+                            : (m.stable || '→ Stable')}
+                      </Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={s.mandiPrice}>
+                        PKR {mandi.price_per_40kg?.toLocaleString()}
+                      </Text>
+                      <Text style={s.mandiUnit}>{m.unit || '/40kg'}</Text>
+                      {/* translated Net label */}
+                      <Text style={s.mandiNet}>
+                        {m.netLabel || 'Net'}: {mandi.net_revenue_pkr?.toLocaleString()}
+                      </Text>
+                      {/* translated transport label */}
+                      <Text style={[s.mandiTransport, { color: C.inkMuted }]}>
+                        🚛 {mandi.transport_cost_pkr?.toLocaleString()} {m.transportLabel || 'transport'}
+                      </Text>
+                    </View>
+                  </View>
+                </CardEntrance>
+              ))}
+            </>
+          ) : (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={{ color: C.inkMuted, fontSize: 14 }}>
+                {m.noData || 'Data load nahi hua. Dobara try karein.'}
+              </Text>
+            </View>
+          )}
+          </ScrollView>
+        </ScreenEntrance>
+      </View>
   );
 }
 

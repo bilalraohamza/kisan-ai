@@ -5,6 +5,7 @@ import {
 import AjrakBand from '../components/AjrakBand';
 import { C } from '../constants/colors';
 import { useLanguage } from '../context/LanguageContext';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const LANGUAGES = [
   {
@@ -42,58 +43,60 @@ export default function LanguagePickerScreen() {
 
   return (
     <View style={s.root}>
-      <StatusBar barStyle="light-content" backgroundColor={C.maroonDk} />
+        <StatusBar barStyle="light-content" backgroundColor={C.maroonDk} />
 
-      {/* Header */}
-      <View style={s.header}>
-        <AjrakBand h={8} />
-        <View style={s.headerBody}>
-          <View style={s.logo}><Text style={{ fontSize: 36 }}>🌾</Text></View>
-          <Text style={s.appName}>Kisan AI</Text>
-          <Text style={s.appSub}>Pakistan ke kisanon ka AI saathi</Text>
+        {/* Header */}
+        <View style={s.header}>
+          <AjrakBand h={8} />
+          <View style={s.headerBody}>
+            <View style={s.logo}><Text style={{ fontSize: 36 }}>🌾</Text></View>
+            <Text style={s.appName}>Kisan AI</Text>
+            <Text style={s.appSub}>Pakistan ke kisanon ka AI saathi</Text>
+          </View>
+          <AjrakBand h={8} />
         </View>
-        <AjrakBand h={8} />
+
+        <ScreenEntrance style={{ flex: 1 }}>
+          <View style={s.body}>
+          <Text style={s.title}>Zaban Chunein</Text>
+          <Text style={s.sub}>App kis zaban mein chalani hai?</Text>
+
+          {/* Language Cards */}
+          {LANGUAGES.map((lang, idx) => {
+            const active = selected === lang.key;
+            return (
+              <CardEntrance key={lang.key} delay={100 + idx * 100}>
+                <AnimatedPressable
+                  style={[s.card, active && s.cardActive]}
+                  onPress={() => setSelected(lang.key)}
+                >
+                  <View style={s.cardLeft}>
+                    <Text style={s.flag}>{lang.flag}</Text>
+                  </View>
+                  <View style={s.cardMid}>
+                    <Text style={[s.langName, lang.rtl && s.rtlText, active && s.activeText]}>
+                      {lang.name}
+                    </Text>
+                    <Text style={[s.langSample, lang.rtl && s.rtlText]}>
+                      {lang.sample}
+                    </Text>
+                    <Text style={s.langDesc}>{lang.desc}</Text>
+                  </View>
+                  <View style={[s.radio, active && s.radioActive]}>
+                    {active && <View style={s.radioDot} />}
+                  </View>
+                </AnimatedPressable>
+              </CardEntrance>
+            );
+          })}
+
+          {/* Continue button */}
+          <AnimatedPressable style={s.continueBtn} onPress={confirm}>
+            <Text style={s.continueBtnText}>Aage Barein →</Text>
+          </AnimatedPressable>
+          </View>
+        </ScreenEntrance>
       </View>
-
-      <View style={s.body}>
-        <Text style={s.title}>Zaban Chunein</Text>
-        <Text style={s.sub}>App kis zaban mein chalani hai?</Text>
-
-        {/* Language Cards */}
-        {LANGUAGES.map((lang) => {
-          const active = selected === lang.key;
-          return (
-            <TouchableOpacity
-              key={lang.key}
-              style={[s.card, active && s.cardActive]}
-              activeOpacity={0.8}
-              onPress={() => setSelected(lang.key)}
-            >
-              <View style={s.cardLeft}>
-                <Text style={s.flag}>{lang.flag}</Text>
-              </View>
-              <View style={s.cardMid}>
-                <Text style={[s.langName, lang.rtl && s.rtlText, active && s.activeText]}>
-                  {lang.name}
-                </Text>
-                <Text style={[s.langSample, lang.rtl && s.rtlText]}>
-                  {lang.sample}
-                </Text>
-                <Text style={s.langDesc}>{lang.desc}</Text>
-              </View>
-              <View style={[s.radio, active && s.radioActive]}>
-                {active && <View style={s.radioDot} />}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-
-        {/* Continue button */}
-        <TouchableOpacity style={s.continueBtn} onPress={confirm} activeOpacity={0.85}>
-          <Text style={s.continueBtnText}>Aage Barein →</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
   );
 }
 

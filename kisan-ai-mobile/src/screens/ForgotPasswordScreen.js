@@ -7,6 +7,7 @@ import AjrakBand from '../components/AjrakBand';
 import { C } from '../constants/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const validateEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
@@ -37,72 +38,73 @@ export default function ForgotPasswordScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={s.root}>
-        {/* Header */}
-        <View style={s.header}>
-          <AjrakBand h={8} />
-          <View style={s.headerBody}>
-            <View style={s.logo}><Text style={{ fontSize: 32 }}>🔑</Text></View>
-            <Text style={s.appName}>Kisan AI</Text>
-            <Text style={s.appSub}>{fp.title}</Text>
-          </View>
-          <AjrakBand h={8} />
-        </View>
-
-        <View style={s.body}>
-          {sent ? (
-            // ── Success state ──────────────────────────────────────────────
-            <View style={s.successCard}>
-              <Text style={{ fontSize: 52, textAlign: 'center', marginBottom: 16 }}>📬</Text>
-              <Text style={s.successTitle}>{fp.successTitle}</Text>
-              <Text style={s.successSub}>{fp.successSub}</Text>
-              <TouchableOpacity
-                style={s.backBtn}
-                onPress={() => navigation.navigate('Login')}
-              >
-                <Text style={s.backBtnText}>{fp.backToLogin}</Text>
-              </TouchableOpacity>
+          {/* Header */}
+          <View style={s.header}>
+            <AjrakBand h={8} />
+            <View style={s.headerBody}>
+              <View style={s.logo}><Text style={{ fontSize: 32 }}>🔑</Text></View>
+              <Text style={s.appName}>Kisan AI</Text>
+              <Text style={s.appSub}>{fp.title}</Text>
             </View>
-          ) : (
-            // ── Form state ────────────────────────────────────────────────
-            <>
-              <Text style={s.title}>{fp.title}</Text>
-              <Text style={s.sub}>{fp.sub}</Text>
+            <AjrakBand h={8} />
+          </View>
 
-              <Text style={s.label}>{fp.emailLabel}</Text>
-              <TextInput
-                style={[s.input, emailErr && s.inputError]}
-                placeholder="apka@email.com"
-                placeholderTextColor={C.inkFaint}
-                value={email}
-                onChangeText={v => { setEmail(v); setEmailErr(''); }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {emailErr ? <Text style={s.errorText}>⚠ {emailErr}</Text> : null}
+          <ScreenEntrance style={{ flex: 1 }}>
+            <View style={s.body}>
+            {sent ? (
+              // ── Success state ──────────────────────────────────────────────
+              <View style={s.successCard}>
+                <Text style={{ fontSize: 52, textAlign: 'center', marginBottom: 16 }}>📬</Text>
+                <Text style={s.successTitle}>{fp.successTitle}</Text>
+                <Text style={s.successSub}>{fp.successSub}</Text>
+                <AnimatedPressable
+                  style={s.backBtn}
+                  onPress={() => navigation.navigate('Login')}
+                >
+                  <Text style={s.backBtnText}>{fp.backToLogin}</Text>
+                </AnimatedPressable>
+              </View>
+            ) : (
+              // ── Form state ────────────────────────────────────────────────
+              <>
+                <Text style={s.title}>{fp.title}</Text>
+                <Text style={s.sub}>{fp.sub}</Text>
 
-              <TouchableOpacity
-                style={[s.sendBtn, loading && { opacity: 0.7 }]}
-                onPress={handleSend}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                {loading
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={s.sendBtnText}>{fp.sendBtn}</Text>
-                }
-              </TouchableOpacity>
+                <Text style={s.label}>{fp.emailLabel}</Text>
+                <TextInput
+                  style={[s.input, emailErr && s.inputError]}
+                  placeholder="apka@email.com"
+                  placeholderTextColor={C.inkFaint}
+                  value={email}
+                  onChangeText={v => { setEmail(v); setEmailErr(''); }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {emailErr ? <Text style={s.errorText}>⚠ {emailErr}</Text> : null}
 
-              <TouchableOpacity
-                style={s.backLink}
-                onPress={() => navigation.goBack()}
-              >
-                <Text style={s.backLinkText}>{fp.backToLogin}</Text>
-              </TouchableOpacity>
-            </>
-          )}
+                <AnimatedPressable
+                  style={[s.sendBtn, loading && { opacity: 0.7 }]}
+                  onPress={handleSend}
+                  disabled={loading}
+                >
+                  {loading
+                    ? <ActivityIndicator color="#fff" size="small" />
+                    : <Text style={s.sendBtnText}>{fp.sendBtn}</Text>
+                  }
+                </AnimatedPressable>
+
+                <AnimatedPressable
+                  style={s.backLink}
+                  onPress={() => navigation.goBack()}
+                >
+                  <Text style={s.backLinkText}>{fp.backToLogin}</Text>
+                </AnimatedPressable>
+              </>
+            )}
+            </View>
+          </ScreenEntrance>
         </View>
-      </View>
     </KeyboardAvoidingView>
   );
 }

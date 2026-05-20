@@ -9,6 +9,7 @@ import { C } from '../constants/colors';
 import { useAuth }     from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const validateEmail    = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -96,139 +97,141 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        style={s.root}
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* ── Header ── */}
-        <View style={[s.header, { paddingTop: insets.top + 16 }]}>
-          <AjrakBand h={8} />
-          <View style={s.headerBody}>
-            <View style={s.logo}><Text style={{ fontSize: 36 }}>🌾</Text></View>
-            <Text style={s.appName}>Kisan AI</Text>
-            <Text style={s.appSub}>Pakistan ke kisanon ka AI saathi</Text>
-          </View>
-          <AjrakBand h={8} />
-        </View>
-
-        <View style={s.form}>
-
-          {/* ── 🌐 Language Switcher ── */}
-          <View style={s.langBox}>
-            <Text style={s.langBoxLabel}>🌐  Zaban / Language</Text>
-            <View style={s.langRow}>
-              {LANG_OPTIONS.map(opt => {
-                const active = language === opt.key;
-                return (
-                  <TouchableOpacity
-                    key={opt.key}
-                    style={[s.langBtn, active && s.langBtnActive]}
-                    onPress={() => selectLanguage(opt.key)}
-                    activeOpacity={0.75}
-                  >
-                    <Text style={[s.langBtnText, active && s.langBtnTextActive]}>
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+          style={s.root}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* ── Header ── */}
+          <View style={[s.header, { paddingTop: insets.top + 16 }]}>
+            <AjrakBand h={8} />
+            <View style={s.headerBody}>
+              <View style={s.logo}><Text style={{ fontSize: 36 }}>🌾</Text></View>
+              <Text style={s.appName}>Kisan AI</Text>
+              <Text style={s.appSub}>Pakistan ke kisanon ka AI saathi</Text>
             </View>
+            <AjrakBand h={8} />
           </View>
 
-          <Text style={s.formTitle}>{a.loginTitle}</Text>
-          <Text style={s.formSub}>{a.loginSub}</Text>
+          <ScreenEntrance>
+            <View style={s.form}>
 
-          <View style={s.demoCard}>
-            <Text style={s.demoTitle}>Demo Account</Text>
-            <Text style={s.demoText}>Email: demo@kisanai.pk</Text>
-            <Text style={s.demoText}>Password: kisan2026</Text>
-            <TouchableOpacity onPress={() => {
-              setEmail('demo@kisanai.pk');
-              setPassword('kisan2026');
-            }}>
-              <Text style={s.demoBtn}>Use Demo Account</Text>
-            </TouchableOpacity>
-          </View>
+            {/* ── 🌐 Language Switcher ── */}
+            <View style={s.langBox}>
+              <Text style={s.langBoxLabel}>🌐  Zaban / Language</Text>
+              <View style={s.langRow}>
+                {LANG_OPTIONS.map(opt => {
+                  const active = language === opt.key;
+                  return (
+                    <AnimatedPressable
+                      key={opt.key}
+                      style={[s.langBtn, active && s.langBtnActive]}
+                      onPress={() => selectLanguage(opt.key)}
+                    >
+                      <Text style={[s.langBtnText, active && s.langBtnTextActive]}>
+                        {opt.label}
+                      </Text>
+                    </AnimatedPressable>
+                  );
+                })}
+              </View>
+            </View>
 
-          {/* Email */}
-          <Text style={s.label}>{a.emailLabel}</Text>
-          <TextInput
-            style={[s.input, errors.email && s.inputError]}
-            placeholder="apka@email.com"
-            placeholderTextColor={C.inkFaint}
-            value={email}
-            onChangeText={v => { setEmail(v); setErrors(p => ({ ...p, email: '' })); }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {errors.email ? <Text style={s.errorText}>⚠ {errors.email}</Text> : null}
+            <Text style={s.formTitle}>{a.loginTitle}</Text>
+            <Text style={s.formSub}>{a.loginSub}</Text>
 
-          {/* Password */}
-          <Text style={s.label}>{a.passLabel}</Text>
-          <View style={s.passRow}>
+            <View style={s.demoCard}>
+              <Text style={s.demoTitle}>Demo Account</Text>
+              <Text style={s.demoText}>Email: demo@kisanai.pk</Text>
+              <Text style={s.demoText}>Password: kisan2026</Text>
+              <AnimatedPressable onPress={() => {
+                setEmail('demo@kisanai.pk');
+                setPassword('kisan2026');
+              }}>
+                <Text style={s.demoBtn}>Use Demo Account</Text>
+              </AnimatedPressable>
+            </View>
+
+            {/* Email */}
+            <Text style={s.label}>{a.emailLabel}</Text>
             <TextInput
-              style={[s.input, { flex: 1 }, errors.password && s.inputError]}
-              placeholder="••••••••"
+              style={[s.input, errors.email && s.inputError]}
+              placeholder="apka@email.com"
               placeholderTextColor={C.inkFaint}
-              value={password}
-              onChangeText={v => { setPassword(v); setErrors(p => ({ ...p, password: '' })); }}
-              secureTextEntry={!showPass}
+              value={email}
+              onChangeText={v => { setEmail(v); setErrors(p => ({ ...p, email: '' })); }}
+              keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
             />
-            <TouchableOpacity style={s.eyeBtn} onPress={() => setShowPass(p => !p)}>
-              <Text style={{ fontSize: 18 }}>{showPass ? '🙈' : '👁'}</Text>
-            </TouchableOpacity>
+            {errors.email ? <Text style={s.errorText}>⚠ {errors.email}</Text> : null}
+
+            {/* Password */}
+            <Text style={s.label}>{a.passLabel}</Text>
+            <View style={s.passRow}>
+              <TextInput
+                style={[s.input, { flex: 1 }, errors.password && s.inputError]}
+                placeholder="••••••••"
+                placeholderTextColor={C.inkFaint}
+                value={password}
+                onChangeText={v => { setPassword(v); setErrors(p => ({ ...p, password: '' })); }}
+                secureTextEntry={!showPass}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <AnimatedPressable style={s.eyeBtn} onPress={() => setShowPass(p => !p)}>
+                <Text style={{ fontSize: 18 }}>{showPass ? '🙈' : '👁'}</Text>
+              </AnimatedPressable>
+            </View>
+            {errors.password ? <Text style={s.errorText}>⚠ {errors.password}</Text> : null}
+
+            {/* Forgot Password */}
+            <AnimatedPressable
+              style={{ alignSelf: 'flex-end', marginBottom: 20, marginTop: 6 }}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              <Text style={s.forgotText}>{a.forgotPass}</Text>
+            </AnimatedPressable>
+
+            {/* Login Button */}
+            <AnimatedPressable
+              style={[s.loginBtn, loading && { opacity: 0.7 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <Text style={s.loginBtnText}>{a.loginBtn}</Text>
+              }
+            </AnimatedPressable>
+
+            {/* Divider */}
+            <View style={s.divider}>
+              <View style={s.divLine} />
+              <Text style={s.divText}>{a.orText}</Text>
+              <View style={s.divLine} />
+            </View>
+
+            {/* Google Login */}
+            <AnimatedPressable style={s.googleBtn} onPress={() => {
+              setEmail('demo@kisanai.pk');
+              setPassword('kisan2026');
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 20 }}>🔵</Text>
+                <Text style={s.googleBtnText}>{a.googleBtn}</Text>
+              </View>
+            </AnimatedPressable>
+
+            {/* Sign Up Link */}
+            <View style={s.signupRow}>
+              <Text style={s.signupPrompt}>{a.signupPrompt}</Text>
+              <AnimatedPressable onPress={() => navigation.navigate('Signup')}>
+                <Text style={s.signupLink}>{a.signupLink}</Text>
+              </AnimatedPressable>
+            </View>
           </View>
-          {errors.password ? <Text style={s.errorText}>⚠ {errors.password}</Text> : null}
-
-          {/* Forgot Password */}
-          <TouchableOpacity
-            style={{ alignSelf: 'flex-end', marginBottom: 20, marginTop: 6 }}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
-            <Text style={s.forgotText}>{a.forgotPass}</Text>
-          </TouchableOpacity>
-
-          {/* Login Button */}
-          <TouchableOpacity
-            style={[s.loginBtn, loading && { opacity: 0.7 }]}
-            onPress={handleLogin}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            {loading
-              ? <ActivityIndicator color="#fff" size="small" />
-              : <Text style={s.loginBtnText}>{a.loginBtn}</Text>
-            }
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={s.divider}>
-            <View style={s.divLine} />
-            <Text style={s.divText}>{a.orText}</Text>
-            <View style={s.divLine} />
-          </View>
-
-          {/* Google Login */}
-          <TouchableOpacity style={s.googleBtn} onPress={() => {
-            setEmail('demo@kisanai.pk');
-            setPassword('kisan2026');
-          }} activeOpacity={0.85}>
-            <Text style={{ fontSize: 20 }}>🔵</Text>
-            <Text style={s.googleBtnText}>{a.googleBtn}</Text>
-          </TouchableOpacity>
-
-          {/* Sign Up Link */}
-          <View style={s.signupRow}>
-            <Text style={s.signupPrompt}>{a.signupPrompt}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={s.signupLink}>{a.signupLink}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+          </ScreenEntrance>
+        </ScrollView>
     </KeyboardAvoidingView>
   );
 }

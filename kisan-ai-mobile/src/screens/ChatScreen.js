@@ -11,6 +11,7 @@ import MessageBubble from '../components/MessageBubble';
 import { C } from '../constants/colors';
 import { chatMessage } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { ScreenEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const CHAT_STORAGE_KEY = 'kisan_chat_history';
 
@@ -138,145 +139,147 @@ export default function ChatScreen() {
     >
       <View style={{ flex: 1, backgroundColor: C.cream }}>
 
-        <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-          <View style={s.headerInner}>
-            <View style={s.avatar}>
-              <Text style={{ fontSize: 20 }}>🌾</Text>
-            </View>
-            <View>
-              <Text style={s.title}>{ch.title}</Text>
-              <Text style={s.subtitle}>{ch.subtitle}</Text>
-            </View>
-            <View style={s.headerRight}>
-              <TouchableOpacity
-                style={s.clearBtn}
-                onPress={() => {
-                  if (Platform.OS === 'web') {
-                    const confirmed = window.confirm(
+          <View style={[s.header, { paddingTop: insets.top + 10 }]}>
+            <View style={s.headerInner}>
+              <View style={s.avatar}>
+                <Text style={{ fontSize: 20 }}>🌾</Text>
+              </View>
+              <View>
+                <Text style={s.title}>{ch.title}</Text>
+                <Text style={s.subtitle}>{ch.subtitle}</Text>
+              </View>
+              <View style={s.headerRight}>
+                <TouchableOpacity
+                  style={s.clearBtn}
+                  onPress={() => {
+                    if (Platform.OS === 'web') {
+                      const confirmed = window.confirm(
+                        language === 'urdu' ? 'کیا آپ پوری چیٹ حذف کرنا چاہتے ہیں؟' :
+                        language === 'english' ? 'Are you sure you want to clear all messages?' :
+                        'Kya aap poori chat delete karna chahte hain?'
+                      );
+                      if (confirmed) clearAllMessages();
+                      return;
+                    }
+                    Alert.alert(
+                      language === 'urdu' ? 'چیٹ صاف کریں' :
+                      language === 'english' ? 'Clear Chat' :
+                      'Chat Clear Karein',
                       language === 'urdu' ? 'کیا آپ پوری چیٹ حذف کرنا چاہتے ہیں؟' :
                       language === 'english' ? 'Are you sure you want to clear all messages?' :
-                      'Kya aap poori chat delete karna chahte hain?'
+                      'Kya aap poori chat delete karna chahte hain?',
+                      [
+                        {
+                          text: language === 'urdu' ? 'نہیں' :
+                                language === 'english' ? 'No' : 'Nahi',
+                          style: 'cancel'
+                        },
+                        {
+                          text: language === 'urdu' ? 'ہاں، صاف کریں' :
+                                language === 'english' ? 'Yes, Clear' :
+                                'Haan, Clear Karein',
+                          style: 'destructive',
+                          onPress: clearAllMessages
+                        }
+                      ]
                     );
-                    if (confirmed) clearAllMessages();
-                    return;
-                  }
-                  Alert.alert(
-                    language === 'urdu' ? 'چیٹ صاف کریں' :
-                    language === 'english' ? 'Clear Chat' :
-                    'Chat Clear Karein',
-                    language === 'urdu' ? 'کیا آپ پوری چیٹ حذف کرنا چاہتے ہیں؟' :
-                    language === 'english' ? 'Are you sure you want to clear all messages?' :
-                    'Kya aap poori chat delete karna chahte hain?',
-                    [
-                      {
-                        text: language === 'urdu' ? 'نہیں' :
-                              language === 'english' ? 'No' : 'Nahi',
-                        style: 'cancel'
-                      },
-                      {
-                        text: language === 'urdu' ? 'ہاں، صاف کریں' :
-                              language === 'english' ? 'Yes, Clear' :
-                              'Haan, Clear Karein',
-                        style: 'destructive',
-                        onPress: clearAllMessages
-                      }
-                    ]
-                  );
-                }}
-              >
-                <Text style={s.clearBtnText}>🗑</Text>
-              </TouchableOpacity>
+                  }}
+                >
+                  <Text style={s.clearBtnText}>🗑</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
 
-        <AjrakBand h={8} />
+          <AjrakBand h={8} />
 
-        <ScrollView
-          ref={scrollViewRef}
-          style={{ flex: 1 }}
-          contentContainerStyle={{ padding: 12, paddingBottom: 20 }}
-          onContentSizeChange={() =>
-            scrollViewRef.current?.scrollToEnd({ animated: true })
-          }
-        >
-          {messages.map(item => (
-            <MessageBubble
-              key={item.id}
-              message={item}
-              onLongPress={() => handleLongPress(item)}
-            />
-          ))}
-          {loading && (
-            <View style={s.typing}>
-              <ActivityIndicator color={C.maroon} size="small" />
-              <Text style={s.typingText}>{ch.typing}</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        <View style={s.inputBar}>
-          <TextInput
-            style={s.input}
-            placeholder={ch.placeholder}
-            placeholderTextColor={C.inkFaint}
-            value={input}
-            onChangeText={setInput}
-            multiline
-            onSubmitEditing={send}
-          />
-          <TouchableOpacity style={s.sendBtn} onPress={send}>
-            <Text style={{ fontSize: 18 }}>📤</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Delete message modal */}
-        <Modal
-          visible={showDeleteModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowDeleteModal(false)}
-        >
-          <TouchableOpacity
-            style={s.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowDeleteModal(false)}
+          <ScreenEntrance style={{ flex: 1 }}>
+            <ScrollView
+            ref={scrollViewRef}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 12, paddingBottom: 20 }}
+            onContentSizeChange={() =>
+              scrollViewRef.current?.scrollToEnd({ animated: true })
+            }
           >
-            <View style={s.modalCard}>
-              <View style={s.modalHeader}>
-                <Text style={s.modalTitle}>
-                  {language === 'urdu' ? 'پیغام' :
-                   language === 'english' ? 'Message' :
-                   'Message'}
-                </Text>
+            {messages.map(item => (
+              <MessageBubble
+                key={item.id}
+                message={item}
+                onLongPress={() => handleLongPress(item)}
+              />
+            ))}
+            {loading && (
+              <View style={s.typing}>
+                <ActivityIndicator color={C.maroon} size="small" />
+                <Text style={s.typingText}>{ch.typing}</Text>
               </View>
+            )}
+          </ScrollView>
 
-              <TouchableOpacity
-                style={s.modalDeleteBtn}
-                onPress={deleteMessage}
-              >
-                <Text style={s.modalDeleteText}>
-                  {language === 'urdu' ? '🗑 یہ پیغام حذف کریں' :
-                   language === 'english' ? '🗑 Delete this message' :
-                   '🗑 Yeh message delete karein'}
-                </Text>
-              </TouchableOpacity>
+          <View style={s.inputBar}>
+            <TextInput
+              style={s.input}
+              placeholder={ch.placeholder}
+              placeholderTextColor={C.inkFaint}
+              value={input}
+              onChangeText={setInput}
+              multiline
+              onSubmitEditing={send}
+            />
+            <AnimatedPressable style={s.sendBtn} onPress={send}>
+              <Text style={{ fontSize: 18 }}>📤</Text>
+            </AnimatedPressable>
+          </View>
 
-              <TouchableOpacity
-                style={s.modalCancelBtn}
-                onPress={() => setShowDeleteModal(false)}
-              >
-                <Text style={s.modalCancelText}>
-                  {language === 'urdu' ? 'منسوخ' :
-                   language === 'english' ? 'Cancel' :
-                   'Cancel'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
+          {/* Delete message modal */}
+          <Modal
+            visible={showDeleteModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowDeleteModal(false)}
+          >
+            <TouchableOpacity
+              style={s.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowDeleteModal(false)}
+            >
+              <View style={s.modalCard}>
+                <View style={s.modalHeader}>
+                  <Text style={s.modalTitle}>
+                    {language === 'urdu' ? 'پیغام' :
+                     language === 'english' ? 'Message' :
+                     'Message'}
+                  </Text>
+                </View>
 
-      </View>
+                <TouchableOpacity
+                  style={s.modalDeleteBtn}
+                  onPress={deleteMessage}
+                >
+                  <Text style={s.modalDeleteText}>
+                    {language === 'urdu' ? '🗑 یہ پیغام حذف کریں' :
+                     language === 'english' ? '🗑 Delete this message' :
+                     '🗑 Yeh message delete karein'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={s.modalCancelBtn}
+                  onPress={() => setShowDeleteModal(false)}
+                >
+                  <Text style={s.modalCancelText}>
+                    {language === 'urdu' ? 'منسوخ' :
+                     language === 'english' ? 'Cancel' :
+                     'Cancel'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
+
+          </ScreenEntrance>
+        </View>
     </KeyboardAvoidingView>
   );
 }

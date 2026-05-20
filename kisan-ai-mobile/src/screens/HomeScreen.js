@@ -10,6 +10,7 @@ import { C } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getMandiPrices } from '../services/api';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const FEATURE_KEYS = ['Chat', 'Disease', 'Weather', 'Mandi', 'Farm', 'Season'];
 const FEATURE_EMOJIS = ['💬', '🔬', '🌤', '🏪', '🌾', '📅'];
@@ -192,119 +193,127 @@ export default function HomeScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={C.maroon} translucent />
 
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        {[120, 90, 60].map((size, i) => (
-          <View key={i} style={[s.circle, {
-            width: size, height: size,
-            right: -size / 2.5, top: -size / 2.5,
-            borderColor: `rgba(201,139,53,${0.15 + i * 0.1})`,
-          }]} />
-        ))}
+          {[120, 90, 60].map((size, i) => (
+            <View key={i} style={[s.circle, {
+              width: size, height: size,
+              right: -size / 2.5, top: -size / 2.5,
+              borderColor: `rgba(201,139,53,${0.15 + i * 0.1})`,
+            }]} />
+          ))}
 
-        <View style={s.headerRow}>
-          <View style={s.logoRow}>
-            <View style={s.logo}>
-              <Text style={{ fontSize: 26 }}>🌾</Text>
+          <View style={s.headerRow}>
+            <View style={s.logoRow}>
+              <View style={s.logo}>
+                <Text style={{ fontSize: 26 }}>🌾</Text>
+              </View>
+              <View>
+                <Text style={s.appName}>Kisan AI</Text>
+                <Text style={s.appSub}>{hm.tagline}</Text>
+              </View>
             </View>
-            <View>
-              <Text style={s.appName}>Kisan AI</Text>
-              <Text style={s.appSub}>{hm.tagline}</Text>
-            </View>
-          </View>
 
-          {user ? (
-            <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-              <Text style={s.logoutBtnText}>🚪 {hm.logoutBtn || 'Logout'}</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={s.loginBtn} onPress={() => navigation.navigate('Login')}>
-              <Text style={s.loginBtnText}>{hm.loginBtn}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={s.infoBar}>
-          <Text style={s.infoBarLabel}>{infoContent.label}</Text>
-          <View style={s.infoBarRow}>
-            <Text style={s.infoBarText}>{infoContent.text}</Text>
-            {infoContent.rate && (
-              <Text style={[s.infoBarRate, {
-                color: cropRate?.trend === 'rising' ? '#86EFAC'
-                  : cropRate?.trend === 'falling' ? '#FCA5A5'
-                    : C.goldLt
-              }]}>
-                {infoContent.rate}
-              </Text>
+            {user ? (
+              <AnimatedPressable style={s.logoutBtn} onPress={handleLogout}>
+                <Text style={s.logoutBtnText}>🚪 {hm.logoutBtn || 'Logout'}</Text>
+              </AnimatedPressable>
+            ) : (
+              <AnimatedPressable style={s.loginBtn} onPress={() => navigation.navigate('Login')}>
+                <Text style={s.loginBtnText}>{hm.loginBtn}</Text>
+              </AnimatedPressable>
             )}
           </View>
-          {infoContent.mandi && (
-            <Text style={s.infoBarMandi}>📍 {infoContent.mandi}</Text>
-          )}
-        </View>
-      </View>
 
-      <AjrakBand h={12} />
-
-      <ScrollView
-        style={s.scrollView}
-        contentContainerStyle={s.body}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={scrollNeeded}
-        onLayout={e => setContainerH(e.nativeEvent.layout.height)}
-        onContentSizeChange={(_, h) => setContentH(h)}
-      >
-        {user && (
-          <View style={s.greetCard}>
-            <Text style={s.greetText}>
-              👋 {greeting}
-            </Text>
-          </View>
-        )}
-
-        {!farmProfile && (
-          <TouchableOpacity
-            style={s.setupCard}
-            onPress={() => navigation.navigate('Farm')}
-          >
-            <Text style={s.setupEmoji}>👆</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.setupTitle}>
-                {language === 'urdu' ? 'پروفائل سیٹ اپ کریں' :
-                 language === 'english' ? 'Set up your profile first' :
-                 'Pehle apna profile set karein'}
-              </Text>
-              <Text style={s.setupSub}>
-                {language === 'urdu' ? 'موسم، منڈی اور خدمات کے لیے ضروری ہے' :
-                 language === 'english' ? 'Required for weather, mandi and services' :
-                 'Mausam, mandi aur khadmaat ke liye zaroori hai'}
-              </Text>
+          <View style={s.infoBar}>
+            <Text style={s.infoBarLabel}>{infoContent.label}</Text>
+            <View style={s.infoBarRow}>
+              <Text style={s.infoBarText}>{infoContent.text}</Text>
+              {infoContent.rate && (
+                <Text style={[s.infoBarRate, {
+                  color: cropRate?.trend === 'rising' ? '#86EFAC'
+                    : cropRate?.trend === 'falling' ? '#FCA5A5'
+                      : C.goldLt
+                }]}>
+                  {infoContent.rate}
+                </Text>
+              )}
             </View>
-            <Text style={{ fontSize: 18 }}>→</Text>
-          </TouchableOpacity>
-        )}
-
-        <Text style={s.sectionLabel}>{hm.sectionLabel}</Text>
-
-        <View style={s.grid}>
-          {hm.features.map((f, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={[s.featureCard, {
-                backgroundColor: FEATURE_BG[idx],
-                borderColor: FEATURE_BDR[idx]
-              }]}
-              activeOpacity={0.75}
-              onPress={() => navigation.navigate(FEATURE_KEYS[idx])}
-            >
-              <Text style={{ fontSize: 28, marginBottom: 4 }}>{FEATURE_EMOJIS[idx]}</Text>
-              <Text style={s.featureTitle}>{f.title}</Text>
-              <Text style={s.featureSub}>{f.sub}</Text>
-            </TouchableOpacity>
-          ))}
+            {infoContent.mandi && (
+              <Text style={s.infoBarMandi}>📍 {infoContent.mandi}</Text>
+            )}
+          </View>
         </View>
 
+        <AjrakBand h={12} />
 
-      </ScrollView>
-    </View>
+        <ScreenEntrance style={{ flex: 1 }}>
+          <ScrollView
+            style={s.scrollView}
+          contentContainerStyle={s.body}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollNeeded}
+          onLayout={e => setContainerH(e.nativeEvent.layout.height)}
+          onContentSizeChange={(_, h) => setContentH(h)}
+        >
+          {user && (
+            <CardEntrance delay={100}>
+              <View style={s.greetCard}>
+                <Text style={s.greetText}>
+                  👋 {greeting}
+                </Text>
+              </View>
+            </CardEntrance>
+          )}
+
+          {!farmProfile && (
+            <CardEntrance delay={150}>
+              <AnimatedPressable
+                style={s.setupCard}
+                onPress={() => navigation.navigate('Farm')}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <Text style={s.setupEmoji}>👆</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.setupTitle}>
+                      {language === 'urdu' ? 'پروفائل سیٹ اپ کریں' :
+                       language === 'english' ? 'Set up your profile first' :
+                       'Pehle apna profile set karein'}
+                    </Text>
+                    <Text style={s.setupSub}>
+                      {language === 'urdu' ? 'موسم، منڈی اور خدمات کے لیے ضروری ہے' :
+                       language === 'english' ? 'Required for weather, mandi and services' :
+                       'Mausam, mandi aur khadmaat ke liye zaroori hai'}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 18, color: '#fff' }}>→</Text>
+                </View>
+              </AnimatedPressable>
+            </CardEntrance>
+          )}
+
+          <Text style={s.sectionLabel}>{hm.sectionLabel}</Text>
+
+          <View style={s.grid}>
+            {hm.features.map((f, idx) => (
+              <CardEntrance key={idx} delay={180 + idx * 80} style={{ width: '47%' }}>
+                <AnimatedPressable
+                  style={[s.featureCard, {
+                    width: '100%',
+                    backgroundColor: FEATURE_BG[idx],
+                    borderColor: FEATURE_BDR[idx]
+                  }]}
+                  onPress={() => navigation.navigate(FEATURE_KEYS[idx])}
+                >
+                  <Text style={{ fontSize: 28, marginBottom: 4 }}>{FEATURE_EMOJIS[idx]}</Text>
+                  <Text style={s.featureTitle}>{f.title}</Text>
+                  <Text style={s.featureSub}>{f.sub}</Text>
+                </AnimatedPressable>
+              </CardEntrance>
+            ))}
+          </View>
+
+          </ScrollView>
+        </ScreenEntrance>
+      </View>
   );
 }
 

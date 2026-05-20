@@ -8,6 +8,7 @@ import AjrakBand from '../components/AjrakBand';
 import { C } from '../constants/colors';
 import { useLanguage } from '../context/LanguageContext';
 import { getSeasonPlan } from '../services/api';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 const getCropEmoji = (cropType) => {
   const m = { wheat: '🌾', rice: '🍚', cotton: '🌿', sugarcane: '🎋', maize: '🌽' };
@@ -221,7 +222,7 @@ export default function SeasonScreen({ navigation }) {
       <Text style={s.label}>{L.crop}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 15 }}>
         {crops.map(crop => (
-          <TouchableOpacity
+          <AnimatedPressable
             key={crop.value}
             style={[s.cropChip, selectedCrop.value === crop.value && s.cropChipActive]}
             onPress={() => setSelectedCrop(crop)}
@@ -230,18 +231,18 @@ export default function SeasonScreen({ navigation }) {
             <Text style={[s.cropChipLabel, selectedCrop.value === crop.value && s.cropChipLabelActive]}>
               {crop.label}
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         ))}
       </ScrollView>
 
       <Text style={s.label}>{L.acres}</Text>
       <View style={s.acresRow}>
-        <TouchableOpacity
+        <AnimatedPressable
           style={s.acresBtn}
           onPress={() => setAcres(a => String(Math.max(1, parseInt(a || 1) - 1)))}
         >
           <Text style={s.acresBtnText}>−</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
         <TextInput
           style={s.acresInput}
           value={acres}
@@ -249,12 +250,12 @@ export default function SeasonScreen({ navigation }) {
           keyboardType="numeric"
           textAlign="center"
         />
-        <TouchableOpacity
+        <AnimatedPressable
           style={s.acresBtn}
           onPress={() => setAcres(a => String(parseInt(a || 0) + 1))}
         >
           <Text style={s.acresBtnText}>+</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
       <Text style={s.acresLabel}>{L.acre}</Text>
 
@@ -263,7 +264,7 @@ export default function SeasonScreen({ navigation }) {
         {L.months.map((mLabel, i) => {
           const days = -30 * (i + 1);
           return (
-            <TouchableOpacity
+            <AnimatedPressable
               key={i}
               style={[s.quickDateBtn, plantingDate === getDateFromDays(days) && s.quickDateBtnActive]}
               onPress={() => setQuickDate(days)}
@@ -271,7 +272,7 @@ export default function SeasonScreen({ navigation }) {
               <Text style={[s.quickDateLabel, plantingDate === getDateFromDays(days) && s.quickDateLabelActive]}>
                 {mLabel}
               </Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           );
         })}
       </ScrollView>
@@ -293,9 +294,9 @@ export default function SeasonScreen({ navigation }) {
         </Text>
       ) : null}
 
-      <TouchableOpacity style={s.btn} onPress={handleGenerate}>
+      <AnimatedPressable style={s.btn} onPress={handleGenerate}>
         <Text style={s.btnText}>{L.button}</Text>
-      </TouchableOpacity>
+      </AnimatedPressable>
     </View>
   );
 
@@ -314,20 +315,24 @@ export default function SeasonScreen({ navigation }) {
       return (
         <View style={s.planContainer}>
           {/* Banner */}
-          <View style={s.banner}>
-            <Text style={s.bannerTitle}>{getCropEmoji(farmProfile.crop_type)} {plan?.crop_name || ''}</Text>
-            <Text style={s.bannerStage}>{plan?.current_stage_name || ''}</Text>
-            <View style={s.daysRow}>
-              <Text style={s.daysValue}>{plan?.days_to_harvest || 0}</Text>
-              <Text style={s.daysLabel}>days to harvest</Text>
+          <CardEntrance delay={100}>
+            <View style={s.banner}>
+              <Text style={s.bannerTitle}>{getCropEmoji(farmProfile.crop_type)} {plan?.crop_name || ''}</Text>
+              <Text style={s.bannerStage}>{plan?.current_stage_name || ''}</Text>
+              <View style={s.daysRow}>
+                <Text style={s.daysValue}>{plan?.days_to_harvest || 0}</Text>
+                <Text style={s.daysLabel}>days to harvest</Text>
+              </View>
+              <Text style={s.estHarvest}>Est: {plan?.estimated_harvest_date || ''}</Text>
             </View>
-            <Text style={s.estHarvest}>Est: {plan?.estimated_harvest_date || ''}</Text>
-          </View>
+          </CardEntrance>
 
           {isReadySoon && (
-            <View style={s.urgentBanner}>
-              <Text style={s.urgentText}>{texts.urgent}</Text>
-            </View>
+            <CardEntrance delay={150}>
+              <View style={s.urgentBanner}>
+                <Text style={s.urgentText}>{texts.urgent}</Text>
+              </View>
+            </CardEntrance>
           )}
 
           {/* Upcoming Services */}
@@ -335,59 +340,61 @@ export default function SeasonScreen({ navigation }) {
             <View style={s.section}>
               <Text style={s.sectionTitle}>{texts.next30}</Text>
               {(plan?.upcoming_services || []).map((item, i) => (
-                <View key={i} style={s.serviceCard}>
-                  <View style={s.serviceCardHeader}>
-                    <View style={s.serviceNameRow}>
-                      <Text style={s.serviceEmoji}>
-                        {getServiceEmoji(item.service)}
-                      </Text>
-                      <Text style={s.serviceName}>
-                        {item?.service || 'Service'}
-                      </Text>
-                    </View>
-                    <View style={[s.urgencyBadge, {
-                      backgroundColor:
-                        (item?.urgency || 'low') === 'high' ? '#FEE2E2' :
-                          (item?.urgency || 'low') === 'medium' ? '#FEF3C7' : '#DCFCE7'
-                    }]}>
-                      <Text style={[s.urgencyText, {
-                        color:
-                          (item?.urgency || 'low') === 'high' ? '#B91C1C' :
-                            (item?.urgency || 'low') === 'medium' ? '#D97706' : '#16A34A'
+                <CardEntrance key={i} delay={200 + i * 80}>
+                  <View style={s.serviceCard}>
+                    <View style={s.serviceCardHeader}>
+                      <View style={s.serviceNameRow}>
+                        <Text style={s.serviceEmoji}>
+                          {getServiceEmoji(item.service)}
+                        </Text>
+                        <Text style={s.serviceName}>
+                          {item?.service || 'Service'}
+                        </Text>
+                      </View>
+                      <View style={[s.urgencyBadge, {
+                        backgroundColor:
+                          (item?.urgency || 'low') === 'high' ? '#FEE2E2' :
+                            (item?.urgency || 'low') === 'medium' ? '#FEF3C7' : '#DCFCE7'
                       }]}>
-                        {(item?.urgency || 'low').toUpperCase()}
-                      </Text>
+                        <Text style={[s.urgencyText, {
+                          color:
+                            (item?.urgency || 'low') === 'high' ? '#B91C1C' :
+                              (item?.urgency || 'low') === 'medium' ? '#D97706' : '#16A34A'
+                        }]}>
+                          {(item?.urgency || 'low').toUpperCase()}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <Text style={s.recommendedBy}>
-                    📅 {item?.recommended_by || ''}
-                  </Text>
-
-                  <Text style={s.serviceReason}>
-                    {item?.reason || ''}
-                  </Text>
-
-                  {item?.action && (
-                    <Text style={s.serviceAction}>
-                      ✅ {item.action}
+                    <Text style={s.recommendedBy}>
+                      📅 {item?.recommended_by || ''}
                     </Text>
-                  )}
 
-                  {item?.navigate_to ? (
-                    <TouchableOpacity
-                      style={s.navigateBtn}
-                      onPress={() => navigation.navigate(item.navigate_to)}
-                    >
-                      <Text style={s.navigateBtnText}>
-                        {item.navigate_to === 'Services' ? '🚜 Service Book Karein' :
-                          item.navigate_to === 'Mandi' ? '🏪 Mandi Dekhen' :
-                            item.navigate_to === 'Weather' ? '🌤 Mausam Dekhen' :
-                              '→ ' + item.navigate_to}
+                    <Text style={s.serviceReason}>
+                      {item?.reason || ''}
+                    </Text>
+
+                    {item?.action && (
+                      <Text style={s.serviceAction}>
+                        ✅ {item.action}
                       </Text>
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
+                    )}
+
+                    {item?.navigate_to ? (
+                      <AnimatedPressable
+                        style={s.navigateBtn}
+                        onPress={() => navigation.navigate(item.navigate_to)}
+                      >
+                        <Text style={s.navigateBtnText}>
+                          {item.navigate_to === 'Services' ? '🚜 Service Book Karein' :
+                            item.navigate_to === 'Mandi' ? '🏪 Mandi Dekhen' :
+                              item.navigate_to === 'Weather' ? '🌤 Mausam Dekhen' :
+                                '→ ' + item.navigate_to}
+                        </Text>
+                      </AnimatedPressable>
+                    ) : null}
+                  </View>
+                </CardEntrance>
               ))}
             </View>
           )}
@@ -397,29 +404,33 @@ export default function SeasonScreen({ navigation }) {
             <View style={s.section}>
               <Text style={s.sectionTitle}>{texts.fullCal}</Text>
               {(plan?.full_calendar || []).map((ev, i) => (
-                <View key={i} style={s.calRow}>
-                  <View style={s.calLeft}>
-                    <Text style={s.calDate}>{ev?.date || ''}</Text>
+                <CardEntrance key={i} delay={300 + i * 50}>
+                  <View style={s.calRow}>
+                    <View style={s.calLeft}>
+                      <Text style={s.calDate}>{ev?.date || ''}</Text>
+                    </View>
+                    <View style={s.calRight}>
+                      <Text style={s.calEventName}>{ev?.event_name || ''}</Text>
+                      <Text style={s.calEventDesc}>{ev?.description || ''}</Text>
+                    </View>
                   </View>
-                  <View style={s.calRight}>
-                    <Text style={s.calEventName}>{ev?.event_name || ''}</Text>
-                    <Text style={s.calEventDesc}>{ev?.description || ''}</Text>
-                  </View>
-                </View>
+                </CardEntrance>
               ))}
             </View>
           )}
 
           {/* Post Harvest */}
           {plan?.post_harvest_plan && (
-            <View style={s.postHarvestCard}>
-              <Text style={s.postHarvestText}>{plan?.post_harvest_plan || ''}</Text>
-            </View>
+            <CardEntrance delay={350}>
+              <View style={s.postHarvestCard}>
+                <Text style={s.postHarvestText}>{plan?.post_harvest_plan || ''}</Text>
+              </View>
+            </CardEntrance>
           )}
 
-          <TouchableOpacity style={s.resetBtn} onPress={() => setPlan(null)}>
+          <AnimatedPressable style={s.resetBtn} onPress={() => setPlan(null)}>
             <Text style={s.resetBtnText}>{texts.reset}</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
       );
     } catch (e) {
@@ -438,9 +449,9 @@ export default function SeasonScreen({ navigation }) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Text>Kuch masla hua. Dobara try karein.</Text>
-        <TouchableOpacity onPress={() => { setPlan(null); setRenderError(false); }}>
+        <AnimatedPressable onPress={() => { setPlan(null); setRenderError(false); }}>
           <Text style={{ marginTop: 10, color: C.maroon, fontWeight: 'bold' }}>Wapas jao</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
     );
   }
@@ -448,14 +459,16 @@ export default function SeasonScreen({ navigation }) {
   return (
     <View style={s.root}>
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <Text style={s.headerTitle}>📅 Season Planner</Text>
-      </View>
-      <AjrakBand h={10} />
+          <Text style={s.headerTitle}>📅 Season Planner</Text>
+        </View>
+        <AjrakBand h={10} />
 
-      <ScrollView contentContainerStyle={s.scroll}>
-        {loading ? renderLoading() : (plan ? renderPlan() : renderInputForm())}
-      </ScrollView>
-    </View>
+        <ScreenEntrance style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={s.scroll}>
+            {loading ? renderLoading() : (plan ? renderPlan() : renderInputForm())}
+          </ScrollView>
+        </ScreenEntrance>
+      </View>
   );
 }
 

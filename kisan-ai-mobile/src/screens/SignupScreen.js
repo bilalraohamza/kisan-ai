@@ -12,6 +12,7 @@ import { useAuth }     from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScreenEntrance, CardEntrance, AnimatedPressable } from '../components/ScreenEntrance';
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 const validateEmail    = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -21,6 +22,7 @@ const validateName     = (n) => n.trim().length >= 2;
 
 export default function SignupScreen({ navigation }) {
   const { login } = useAuth();
+  const { language } = useLanguage();
 
   const [name, setName]         = useState('');
   const [phone, setPhone]       = useState('');
@@ -140,9 +142,9 @@ export default function SignupScreen({ navigation }) {
           secureTextEntry={secure && !show}
         />
         {secure && (
-          <TouchableOpacity style={s.eyeBtn} onPress={toggleShow}>
+          <AnimatedPressable style={s.eyeBtn} onPress={toggleShow}>
             <Text style={{ fontSize: 18 }}>{show ? '🙈' : '👁'}</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         )}
       </View>
       {error ? <Text style={s.errorText}>⚠ {error}</Text> : null}
@@ -152,84 +154,84 @@ export default function SignupScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView style={s.root} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-
-        {/* ── Header ── */}
-        <View style={s.header}>
-          <AjrakBand h={8} />
-          <View style={s.headerBody}>
-            <View style={s.logo}><Text style={{ fontSize: 32 }}>🌾</Text></View>
-            <Text style={s.appName}>Kisan AI</Text>
-            <Text style={s.appSub}>Naya account banayen</Text>
-          </View>
-          <AjrakBand h={8} />
-        </View>
-
-        <View style={s.form}>
-          <Text style={s.formTitle}>Kisan AI mein Khush Aamdeed!</Text>
-          <Text style={s.formSub}>Apni maloomat bhar ke shuru karein</Text>
-
-          <Field label="👤  Apna Naam" value={name} onChange={setName} placeholder="Muhammad Aslam" error={errors.name} errorKey="name" />
-          <Field label="📱  Phone Number" value={phone} onChange={setPhone} placeholder="03001234567" keyboard="phone-pad" error={errors.phone} errorKey="phone" />
-          <Field label="📧  Email" value={email} onChange={setEmail} placeholder="apka@email.com" keyboard="email-address" error={errors.email} errorKey="email" />
-          <Field label="🔒  Password" value={password} onChange={setPassword} placeholder="••••••••" secure show={showPass} toggleShow={() => setShowPass(!showPass)} error={errors.password} errorKey="password" />
-          <Field label="🔒  Password Dobara" value={confirm} onChange={setConfirm} placeholder="••••••••" secure show={showConf} toggleShow={() => setShowConf(!showConf)} error={errors.confirm} errorKey="confirm" />
-
-          {/* Password strength */}
-          {password.length > 0 && (
-            <View style={s.strengthRow}>
-              {[1,2,3,4].map(i => (
-                <View key={i} style={[s.strengthBar, {
-                  backgroundColor: password.length >= i * 2
-                    ? password.length >= 8 ? C.green : C.gold
-                    : C.sep
-                }]} />
-              ))}
-              <Text style={s.strengthLabel}>
-                {password.length < 4 ? 'Kamzor' : password.length < 7 ? 'Theek' : 'Mazboot'}
-              </Text>
+          {/* ── Header ── */}
+          <View style={s.header}>
+            <AjrakBand h={8} />
+            <View style={s.headerBody}>
+              <View style={s.logo}><Text style={{ fontSize: 32 }}>🌾</Text></View>
+              <Text style={s.appName}>Kisan AI</Text>
+              <Text style={s.appSub}>Naya account banayen</Text>
             </View>
-          )}
+            <AjrakBand h={8} />
+          </View>
 
-          {/* Terms */}
-          <TouchableOpacity style={s.termsRow} onPress={() => setAgreed(!agreed)}>
-            <View style={[s.checkbox, agreed && s.checkboxActive]}>
-              {agreed && <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>✓</Text>}
+          <ScreenEntrance>
+            <View style={s.form}>
+            <Text style={s.formTitle}>Kisan AI mein Khush Aamdeed!</Text>
+            <Text style={s.formSub}>Apni maloomat bhar ke shuru karein</Text>
+
+            <Field label="👤  Apna Naam" value={name} onChange={setName} placeholder="Muhammad Aslam" error={errors.name} errorKey="name" />
+            <Field label="📱  Phone Number" value={phone} onChange={setPhone} placeholder="03001234567" keyboard="phone-pad" error={errors.phone} errorKey="phone" />
+            <Field label="📧  Email" value={email} onChange={setEmail} placeholder="apka@email.com" keyboard="email-address" error={errors.email} errorKey="email" />
+            <Field label="🔒  Password" value={password} onChange={setPassword} placeholder="••••••••" secure show={showPass} toggleShow={() => setShowPass(!showPass)} error={errors.password} errorKey="password" />
+            <Field label="🔒  Password Dobara" value={confirm} onChange={setConfirm} placeholder="••••••••" secure show={showConf} toggleShow={() => setShowConf(!showConf)} error={errors.confirm} errorKey="confirm" />
+
+            {/* Password strength */}
+            {password.length > 0 && (
+              <View style={s.strengthRow}>
+                {[1,2,3,4].map(i => (
+                  <View key={i} style={[s.strengthBar, {
+                    backgroundColor: password.length >= i * 2
+                      ? password.length >= 8 ? C.green : C.gold
+                      : C.sep
+                  }]} />
+                ))}
+                <Text style={s.strengthLabel}>
+                  {password.length < 4 ? 'Kamzor' : password.length < 7 ? 'Theek' : 'Mazboot'}
+                </Text>
+              </View>
+            )}
+
+            {/* Terms */}
+            <AnimatedPressable style={s.termsRow} onPress={() => setAgreed(!agreed)}>
+              <View style={[s.checkbox, agreed && s.checkboxActive]}>
+                {agreed && <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>✓</Text>}
+              </View>
+              <Text style={s.termsText}>Main Kisan AI ki <Text style={s.termsLink}>Shartein wa Zaroorat</Text> se raazi hoon</Text>
+            </AnimatedPressable>
+            {errors.agreed ? <Text style={s.errorText}>⚠ {errors.agreed}</Text> : null}
+
+            {/* Signup Button */}
+            <AnimatedPressable style={s.signupBtn} onPress={handleSignup} disabled={loading}>
+              {loading
+                ? <ActivityIndicator color="#fff" />
+                : <Text style={s.signupBtnText}>Account Banayen →</Text>
+              }
+            </AnimatedPressable>
+
+            {/* Divider */}
+            <View style={s.divider}>
+              <View style={s.divLine} />
+              <Text style={s.divText}>Ya</Text>
+              <View style={s.divLine} />
             </View>
-            <Text style={s.termsText}>Main Kisan AI ki <Text style={s.termsLink}>Shartein wa Zaroorat</Text> se raazi hoon</Text>
-          </TouchableOpacity>
-          {errors.agreed ? <Text style={s.errorText}>⚠ {errors.agreed}</Text> : null}
 
-          {/* Signup Button */}
-          <TouchableOpacity style={s.signupBtn} onPress={handleSignup} disabled={loading} activeOpacity={0.85}>
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={s.signupBtnText}>Account Banayen →</Text>
-            }
-          </TouchableOpacity>
+            {/* Google Signup */}
+            <AnimatedPressable style={s.googleBtn} onPress={() => promptAsync()} disabled={loading}>
+              <Text style={{ fontSize: 20 }}>🔵</Text>
+              <Text style={s.googleBtnText}>Google se Sign Up Karein</Text>
+            </AnimatedPressable>
 
-          {/* Divider */}
-          <View style={s.divider}>
-            <View style={s.divLine} />
-            <Text style={s.divText}>Ya</Text>
-            <View style={s.divLine} />
+            {/* Login Link */}
+            <View style={s.loginRow}>
+              <Text style={s.loginPrompt}>Pehle se account hai? </Text>
+              <AnimatedPressable onPress={() => navigation.navigate('Login')}>
+                <Text style={s.loginLink}>Login Karein</Text>
+              </AnimatedPressable>
+            </View>
           </View>
-
-          {/* Google Signup */}
-          <TouchableOpacity style={s.googleBtn} onPress={() => promptAsync()} disabled={loading} activeOpacity={0.85}>
-            <Text style={{ fontSize: 20 }}>🔵</Text>
-            <Text style={s.googleBtnText}>Google se Sign Up Karein</Text>
-          </TouchableOpacity>
-
-          {/* Login Link */}
-          <View style={s.loginRow}>
-            <Text style={s.loginPrompt}>Pehle se account hai? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={s.loginLink}>Login Karein</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-      </ScrollView>
+          </ScreenEntrance>
+        </ScrollView>
     </KeyboardAvoidingView>
   );
 }

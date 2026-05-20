@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import * as Speech from 'expo-speech';
 
 import { useLanguage } from '../context/LanguageContext';
+import { PulseView } from './ScreenEntrance';
 
 export default function UrgentBanner({ message, autoSpeak = false, language = 'roman_urdu' }) {
   const { t } = useLanguage();
@@ -20,13 +21,15 @@ export default function UrgentBanner({ message, autoSpeak = false, language = 'r
   if (!message) return null;
 
   return (
-    <View style={styles.banner}>
-      <Text style={{ fontSize: 22 }}>⚠️</Text>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{t?.weather?.urgentTitle || 'Fori Ittela!'}</Text>
-        <Text style={styles.body}>{message}</Text>
+    <PulseView>
+      <View style={styles.banner}>
+        <Text style={{ fontSize: 22 }}>⚠️</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>{t?.weather?.urgentTitle || 'Fori Ittela!'}</Text>
+          <Text style={styles.body}>{message}</Text>
+        </View>
       </View>
-    </View>
+    </PulseView>
   );
 }
 
