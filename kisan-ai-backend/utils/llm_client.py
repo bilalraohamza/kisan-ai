@@ -83,10 +83,10 @@ def call_groq(prompt: str, timeout: int = 15) -> dict:
         raise Exception("No GROQ_API_KEY")
 
     GROQ_MODELS = [
-        "llama-3.3-70b-versatile",
-        "llama-4-scout",
-        "gpt-oss-120b"
-        
+        "meta-llama/llama-4-scout-17b-16e-instruct",  # fastest, 17B
+        "openai/gpt-oss-20b",                          # fast, 20B
+        "llama-3.3-70b-versatile",                     # medium, 70B
+        "openai/gpt-oss-120b",                         # slowest, 120B best quality
     ]
 
     for model in GROQ_MODELS:

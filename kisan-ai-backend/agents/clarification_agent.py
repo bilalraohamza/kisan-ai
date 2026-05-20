@@ -80,8 +80,15 @@ CRITICAL RULES:
 - If location is in ALREADY KNOWN, never ask for it again
 - If acres is in ALREADY KNOWN, never ask for it again
 - missing_fields must never include fields in ALREADY KNOWN
-- Extract crop names in any language: gandam=wheat, chawal=rice, 
-  kapas=cotton, makki=maize, ganna=sugarcane
+- CRITICAL: CROP NAME NORMALIZATION — always convert to English value:
+  gandam/gehun/گندم → wheat
+  chawal/dhan/چاول → rice  
+  kapas/کپاس → cotton
+  ganna/گنا → sugarcane
+  makki/makkai/مکئی → maize
+  pyaz/پیاز → onion
+  aloo/آلو → potato
+  extracted_fields.crop_type must always be the English value.
 
 ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
 The farmer has selected language: {language}

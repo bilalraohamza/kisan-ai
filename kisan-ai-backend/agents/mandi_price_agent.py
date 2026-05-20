@@ -143,7 +143,29 @@ def run_mandi_price_agent(
 
     crop_data = all_prices.get(crop_type.lower())
     if not crop_data:
-        raise Exception(f"No mandi data found for crop: {crop_type}")
+        print(f"[mandi_agent] No data for {crop_type}, falling back to wheat")
+        crop_data = all_prices.get("wheat")
+        if not crop_data:
+            return {
+                "crop_type": crop_type,
+                "prices": [],
+                "best_mandi": None,
+                "govt_support_price": None,
+                "overall_trend": "unknown",
+                "sell_timing_advice": {
+                    "roman_urdu": f"{crop_type} ke liye abhi mandi data available nahi. Gehun ya chawal select karein.",
+                    "urdu": f"{crop_type} کے لیے ابھی منڈی ڈیٹا دستیاب نہیں۔ گندم یا چاول منتخب کریں۔",
+                    "english": f"No mandi data available for {crop_type}. Please select wheat or rice."
+                }.get(language, f"{crop_type} ke liye mandi data nahi mila."),
+                "wait_or_sell": None,
+                "urgent_alert": None,
+                "potential_extra_earning": "",
+                "trace": {
+                    "agent": "Mandi Price Agent",
+                    "error": f"No data for crop: {crop_type}",
+                    "decision": "Returned empty response"
+                }
+            }
 
     mandis = crop_data["mandis"]
     govt_support_price = crop_data["govt_support_price_per_40kg"]

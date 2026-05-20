@@ -10,6 +10,39 @@ import os
 
 router = APIRouter()
 
+CROP_NAME_MAP = {
+    # Roman Urdu
+    "gandam": "wheat", "gehun": "wheat", "gehu": "wheat",
+    "chawal": "rice", "dhan": "rice",
+    "kapas": "cotton", "cotton": "cotton",
+    "ganna": "sugarcane", "gana": "sugarcane",
+    "makki": "maize", "makkai": "maize", "makai": "maize",
+    "pyaz": "onion", "piaz": "onion",
+    "aloo": "potato", "aaloo": "potato",
+    # Urdu script
+    "گندم": "wheat", "گیہوں": "wheat",
+    "چاول": "rice", "دھان": "rice",
+    "کپاس": "cotton",
+    "گنا": "sugarcane",
+    "مکئی": "maize", "مکی": "maize",
+    "پیاز": "onion",
+    "آلو": "potato",
+    # English
+    "wheat": "wheat", "rice": "rice",
+    "cotton": "cotton", "sugarcane": "sugarcane",
+    "maize": "maize", "corn": "maize",
+    "onion": "onion", "potato": "potato",
+}
+
+def normalize_crop(crop_type: str) -> str:
+    if not crop_type:
+        return "wheat"
+    normalized = CROP_NAME_MAP.get(crop_type.lower().strip())
+    if normalized:
+        return normalized
+    # Not in map — return as-is, mandi agent will handle fallback
+    return crop_type.lower().strip()
+
 def get_coords_for_location(location: str):
     if not location:
         return 30.1575, 71.5249
@@ -72,6 +105,7 @@ async def chat(request: ChatRequest):
     language = request.language
 
     crop_type = fields.get("crop_type", "wheat")
+    crop_type = normalize_crop(crop_type)
     location = fields.get("location", "")
     acres = float(fields.get("acres") or 5)
     preferred_date = fields.get("preferred_date", "2026-05-20")
@@ -107,11 +141,12 @@ async def chat(request: ChatRequest):
             f"PKR {price}/40kg" if price else None,
         ] if p]
 
-        reply = " ".join(parts) or {
-            "roman_urdu": "Mandi prices check ki gayi hain. Mandi tab mein tafseel dekhein.",
-            "urdu": "منڈی قیمتیں چیک کی گئی ہیں۔ منڈی ٹیب میں تفصیل دیکھیں۔",
-            "english": "Mandi prices checked. See full details in the Mandi tab."
-        }.get(language, "Mandi prices check ki gayi hain.")
+        hint = {
+            "roman_urdu": " Mandi tab mein poori details dekhein.",
+            "urdu": " منڈی ٹیب میں پوری تفصیل دیکھیں۔",
+            "english": " See full details in the Mandi tab."
+        }.get(language, "")
+        reply = " ".join(parts) + hint
 
         return {
             "reply": reply,
@@ -134,7 +169,12 @@ async def chat(request: ChatRequest):
         )
         action = weather_result.get("action_today") or ""
         alert = weather_result.get("urgent_alert") or ""
-        reply = f"{alert} {action}".strip() or "Mausam ki maloomat hasil ho gayi hai."
+        hint = {
+            "roman_urdu": " Mausam tab mein 5 din ka poora andaza dekhein.",
+            "urdu": " موسم ٹیب میں 5 دن کا پورا اندازہ دیکھیں۔",
+            "english": " See the full 5-day forecast in the Weather tab."
+        }.get(language, "")
+        reply = f"{alert} {action}".strip() + hint
         return {
             "reply": reply,
             "reply_for_tts": reply,
@@ -159,7 +199,12 @@ async def chat(request: ChatRequest):
             session_id=request.session_id,
             language=language
         )
-        reply = equip_result.get("top_recommendation", "")
+        hint = {
+            "roman_urdu": " Khadmaat tab mein providers ki poori list dekhein.",
+            "urdu": " خدمات ٹیب میں فراہم کاروں کی پوری فہرست دیکھیں۔",
+            "english": " See all providers in the Services tab."
+        }.get(language, "")
+        reply = equip_result.get("top_recommendation", "") + hint
         return {
             "reply": reply,
             "reply_for_tts": reply,
@@ -181,7 +226,12 @@ async def chat(request: ChatRequest):
             farmer_lng=lng,
             language=language
         )
-        reply = season_result.get("harvest_summary", "")
+        hint = {
+            "roman_urdu": " AI Calendar tab mein apni fasal ka poora plan dekhein.",
+            "urdu": " AI کیلنڈر ٹیب میں اپنی فصل کا پورا پلان دیکھیں۔",
+            "english": " See your complete crop plan in the AI Calendar tab."
+        }.get(language, "")
+        reply = season_result.get("harvest_summary", "") + hint
         return {
             "reply": reply,
             "reply_for_tts": reply,
@@ -195,13 +245,11 @@ async def chat(request: ChatRequest):
 
     # DISEASE CHECK — route to crop diagnosis agent
     elif intent == "disease_check":
-        reply = (
-            language == 'urdu' and
-            "بیماری کی تشخیص کے لیے براہ کرم بیماری سکینر استعمال کریں۔ نیچے بیماری ٹیب پر جائیں اور اپنی فصل کی تصویر اپ لوڈ کریں۔" or
-            language == 'english' and
-            "For disease detection please use the Disease Scanner. Go to the Disease tab and upload a photo of your crop for AI analysis." or
-            "Bimari ki pehchan ke liye Disease Scanner use karein. Neeche Bimari tab par jayein aur apni fasal ki tasveer upload karein."
-        )
+        reply = {
+            "roman_urdu": "Bimari ki pehchan ke liye Bimari Scanner tab mein jayein aur apni fasal ki tasveer upload karein. AI turant bimari pehchan lega.",
+            "urdu": "بیماری کی پہچان کے لیے بیماری سکینر ٹیب میں جائیں اور اپنی فصل کی تصویر اپ لوڈ کریں۔ AI فوراً بیماری پہچان لے گا۔",
+            "english": "For disease detection go to the Disease Scanner tab and upload a photo of your crop. AI will identify the disease instantly."
+        }.get(language, "Bimari Scanner tab mein jayein.")
         return {
             "reply": reply,
             "reply_for_tts": reply,

@@ -46,15 +46,7 @@ export default function ChatScreen() {
       );
       const { data } = await chatMessage(input, language || 'roman_urdu', farmProfile);
       
-      // Auto navigate if action is complete
-      if (data.navigate_to && !data.needs_clarification) {
-        setTimeout(() => {
-          navigation.navigate(data.navigate_to, { 
-            preloaded_data: data.mandi_data || null,
-            preloaded_crop: data.mandi_data?.crop_type || null
-          });
-        }, 1500); // wait 1.5 seconds so farmer reads the reply first
-      }
+
 
       const aiMsg = {
         id: (Date.now() + 1).toString(),
