@@ -111,14 +111,35 @@ export const getMandiPrices = async (cropType, language = 'roman_urdu') => {
 };
 
 // ─── Services Find ────────────────────────────────────────────────────────────
-export const findServices = async (serviceType, farmProfile = {}, language = 'roman_urdu') => {
+export const findServices = async (
+  serviceType,
+  location = {},
+  language = 'roman_urdu',
+  cropType = 'wheat',
+  acres = 5,
+  preferredDate = null
+) => {
   const sessionId = await getSessionId();
+  const farmProfile = JSON.parse(
+    await AsyncStorage.getItem('farmProfile') || '{}'
+  );
+
+  const today = new Date();
+  today.setDate(today.getDate() + 2);
+  const date = preferredDate || today.toISOString().split('T')[0];
+
   return api.post('/api/services/find', {
-    service_type: serviceType,
-    farmer_profile: farmProfile,
+    service_type:   serviceType,
+    location: {
+      lat: location.lat || parseFloat(farmProfile.lat) || 30.1575,
+      lng: location.lng || parseFloat(farmProfile.lng) || 71.5249,
+    },
+    crop_type:      cropType || farmProfile.crop_type || 'wheat',
+    acres:          parseFloat(acres || farmProfile.acres || 5),
+    preferred_date: date,
+    session_id:     sessionId,
     language,
-    session_id: sessionId,
-  });
+  }, { timeout: 90000 });
 };
 
 // ─── Season Plan ──────────────────────────────────────────────────────────────

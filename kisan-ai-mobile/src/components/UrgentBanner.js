@@ -4,14 +4,18 @@ import * as Speech from 'expo-speech';
 
 import { useLanguage } from '../context/LanguageContext';
 
-export default function UrgentBanner({ message, autoSpeak = false }) {
+export default function UrgentBanner({ message, autoSpeak = false, language = 'roman_urdu' }) {
   const { t } = useLanguage();
 
   useEffect(() => {
     if (autoSpeak && message) {
-      Speech.speak(message, { language: 'en-US', rate: 0.85 });
+      const ttsLanguage = language === 'urdu' ? 'ur-PK' 
+        : language === 'english' ? 'en-US' 
+        : 'ur-PK'; // roman_urdu uses Urdu TTS since it is Urdu words
+
+      Speech.speak(message, { language: ttsLanguage, rate: 0.85 });
     }
-  }, [message]);
+  }, [message, language]);
 
   if (!message) return null;
 

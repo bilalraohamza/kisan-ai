@@ -45,13 +45,24 @@ export default function ChatScreen() {
         await AsyncStorage.getItem('farmProfile') || '{}'
       );
       const { data } = await chatMessage(input, language || 'roman_urdu', farmProfile);
+      
+      // Auto navigate if action is complete
+      if (data.navigate_to && !data.needs_clarification) {
+        setTimeout(() => {
+          navigation.navigate(data.navigate_to, { 
+            preloaded_data: data.mandi_data || null,
+            preloaded_crop: data.mandi_data?.crop_type || null
+          });
+        }, 1500); // wait 1.5 seconds so farmer reads the reply first
+      }
+
       const aiMsg = {
         id: (Date.now() + 1).toString(),
         text: data.reply,
         ttsText: data.reply_for_tts || data.reply,
         user: false,
         language: data.language || language,
-        clarify: data.clarification_needed,
+        clarify: data.needs_clarification,
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch {

@@ -5,7 +5,6 @@ export const STRINGS = {
     home: {
       tagline: "Pakistan ke kisanon ka AI saathi",
       sectionLabel: "KYA KARNA CHAHEIN?",
-      recentTitle: "Haal ki sargarmi",
       loginBtn: "Login",
       infoSetup: "Apna profile set karein",
       infoSetupSub: "Meri Zameen mein jaa kar apni fasal aur sheher save karein",
@@ -17,11 +16,7 @@ export const STRINGS = {
         { title: "Mandi Bhav", sub: "Sabse acha bhaav" },
         { title: "Meri Zameen", sub: "Farm update karein" },
         { title: "AI Calendar", sub: "Fasal ka plan" }
-      ],
-      activity: [
-        { t:'Gehun bimari scan kiya',     time:'2 gh pehle' },
-        { t:'Combine harvester book kiya', time:'Kal'        },
-      ],
+      ]
     },
     chat: {
       title:'Kisan AI', subtitle:'● Online · Roman Urdu',
@@ -151,7 +146,6 @@ export const STRINGS = {
     home: {
       tagline: "پاکستان کے کسانوں کا AI ساتھی",
       sectionLabel: "کیا کرنا چاہیں؟",
-      recentTitle: "حال کی سرگرمی",
       loginBtn: "لاگ ان",
       infoSetup: "اپنا پروفائل سیٹ کریں",
       infoSetupSub: "میری زمین میں جا کر اپنی فصل اور شہر محفوظ کریں",
@@ -163,11 +157,7 @@ export const STRINGS = {
         { title: "منڈی بھاؤ", sub: "سب سے اچھا بھاؤ" },
         { title: "میری زمین", sub: "فارم اپڈیٹ کریں" },
         { title: "AI کیلنڈر", sub: "فصل کا پلان" }
-      ],
-      activity:[
-        { t:'گندم بیماری اسکین کیا', time:'2 گھ پہلے' },
-        { t:'ہارویسٹر بک کیا',       time:'کل'         },
-      ],
+      ]
     },
     chat:{
       title:'کسان AI', subtitle:'● آن لائن · اردو',
@@ -295,7 +285,6 @@ export const STRINGS = {
     home: {
       tagline: "Pakistan's AI companion for farmers",
       sectionLabel: "WHAT WOULD YOU LIKE TO DO?",
-      recentTitle: "Recent Activity",
       loginBtn: "Login",
       infoSetup: "Set up your profile",
       infoSetupSub: "Go to My Farm to save your crop and city",
@@ -307,11 +296,7 @@ export const STRINGS = {
         { title: "Mandi Prices", sub: "Best market price" },
         { title: "My Farm", sub: "Update farm profile" },
         { title: "AI Calendar", sub: "Crop planner" }
-      ],
-      activity:[
-        { t:'Wheat disease scanned',   time:'2 hrs ago'   },
-        { t:'Combine harvester booked', time:'Yesterday'  },
-      ],
+      ]
     },
     chat:{
       title:'Kisan AI', subtitle:'● Online · English',

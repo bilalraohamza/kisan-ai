@@ -276,16 +276,7 @@ export default function HomeScreen({ navigation }) {
           ))}
         </View>
 
-        <View style={s.activityCard}>
-          <Text style={s.activityTitle}>{hm.recentTitle}</Text>
-          {hm.activity.map((a, i) => (
-            <View key={i} style={[s.activityRow, i === 0 && s.activityRowBorder]}>
-              <View style={[s.dot, { backgroundColor: [C.green, C.terra][i] }]} />
-              <Text style={s.activityText}>{a.t}</Text>
-              <Text style={s.activityTime}>{a.time}</Text>
-            </View>
-          ))}
-        </View>
+
       </ScrollView>
     </View>
   );
@@ -319,11 +310,5 @@ const s = StyleSheet.create({
   featureCard: { width: '47%', borderWidth: 1.5, borderRadius: 16, padding: 13 },
   featureTitle: { fontSize: 14, fontWeight: '700', color: C.ink },
   featureSub: { fontSize: 12, color: C.inkMuted, marginTop: 2, lineHeight: 16 },
-  activityCard: { backgroundColor: C.white, borderRadius: 14, borderWidth: 1, borderColor: C.sep, padding: 12, marginBottom: 10 },
-  activityTitle: { fontSize: 14, fontWeight: '700', color: C.maroon, marginBottom: 8 },
-  activityRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7 },
-  activityRowBorder: { borderBottomWidth: 0.5, borderBottomColor: C.sep },
-  dot: { width: 7, height: 7, borderRadius: 4, marginRight: 10 },
-  activityText: { flex: 1, fontSize: 13, color: C.ink },
-  activityTime: { fontSize: 11, color: C.inkFaint },
+
 });

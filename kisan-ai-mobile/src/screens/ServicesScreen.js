@@ -8,10 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AjrakBand from '../components/AjrakBand';
 import { C } from '../constants/colors';
 import { useLanguage } from '../context/LanguageContext';
-import { getSessionId } from '../services/api';
-import axios from 'axios';
-
-const BASE_URL = 'https://kisan-ai-backend-669164319923.asia-south1.run.app';
+import { findServices } from '../services/api';
 
 const DEFAULT_SERVICES = [
   { label: 'Combine Harvester', value: 'harvester', emoji: '🚜' },
@@ -55,32 +52,14 @@ export default function ServicesScreen() {
     setLoading(true);
 
     try {
-      const sessionId = await getSessionId();
       const profile = farmProfile || {};
 
-      const today = new Date();
-      today.setDate(today.getDate() + 2);
-      const preferredDate = today.toISOString().split('T')[0];
-
-      const requestBody = {
-        service_type: value,
-        location: {
-          lat: parseFloat(profile.lat) || 30.1575,
-          lng: parseFloat(profile.lng) || 71.5249,
-        },
-        crop_type: profile.crop_type || 'wheat',
-        acres: parseFloat(profile.acres) || 5,
-        preferred_date: preferredDate,
-        session_id: sessionId,
-        language: language || 'roman_urdu',
-      };
-
-      console.log('[services] Sending:', JSON.stringify(requestBody));
-
-      const { data } = await axios.post(
-        `${BASE_URL}/api/services/find`,
-        requestBody,
-        { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
+      const { data } = await findServices(
+        value,
+        { lat: parseFloat(profile.lat), lng: parseFloat(profile.lng) },
+        language || 'roman_urdu',
+        profile.crop_type || 'wheat',
+        parseFloat(profile.acres || 5)
       );
 
       // Map backend response to display format

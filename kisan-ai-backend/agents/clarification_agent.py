@@ -50,13 +50,22 @@ ALREADY KNOWN ABOUT THIS FARMER — NEVER ASK FOR THESE AGAIN:
 CURRENT MESSAGE: "{message}"
 
 TASKS:
-1. Detect intent: disease_check, equipment_needed, labor_needed, 
-   mandi_query, weather_query, season_planning, or unknown
+1. Detect intent: disease_check, equipment_needed, labor_needed, mandi_query, weather_query, season_planning, general_agriculture, greeting, or unknown
 2. Extract any NEW fields from current message only
 3. Merge with already known fields
 4. Check what is still missing for the detected intent
 5. If missing fields exist, ask for ONE field only
 6. Generate reply in {language}
+
+If intent is general_agriculture:
+- Any farming question that does not fit other intents
+- Questions about irrigation, fertilizer, pesticides, seeds, crop care, soil, techniques, best practices
+- Do NOT ask for crop_type, acres, or location
+- Answer the question directly in the reply field using your agricultural knowledge
+- Give practical, actionable advice for Pakistani farmers
+- Reply in the farmer's selected language
+- needs_clarification must be false
+- missing_fields must be empty []
 
 REQUIRED FIELDS PER INTENT:
 - disease_check: crop_type, acres, location

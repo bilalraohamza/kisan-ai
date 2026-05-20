@@ -73,7 +73,32 @@ def run_weather_agent(
     weather_data = weather_response.json()
 
     if weather_response.status_code != 200:
-        raise Exception(f"OpenWeatherMap error: {weather_data}")
+        print(f"[weather_agent] OpenWeatherMap error: {weather_data}")
+        return {
+            "location": "Pakistan",
+            "forecast_5_day": [],
+            "urgent_alert": None,
+            "best_harvest_window": None,
+            "weekly_risk": "unknown",
+            "action_today": (
+                "Mausam ki maloomat abhi dastiyab nahi. Baad mein dobara try karein."
+                if language == "roman_urdu"
+                else "موسم کی معلومات ابھی دستیاب نہیں۔ بعد میں دوبارہ کوشش کریں۔"
+                if language == "urdu"
+                else "Weather data unavailable. Please try again later."
+            ),
+            "trace": {
+                "agent": "Weather Intelligence Agent",
+                "error": f"OpenWeatherMap returned {weather_response.status_code}",
+                "workplan": workplan,
+                "tool_call": "OpenWeatherMap API",
+                "observation": "API call failed",
+                "reasoning": "Service unavailable",
+                "decision": "Return graceful fallback",
+                "action": "Returned empty forecast",
+                "outcome": "Farmer informed of unavailability"
+            }
+        }
 
     # ------------------------------------------------------------------
     # STEP 4 — EXTRACT & CLEAN FORECAST DATA

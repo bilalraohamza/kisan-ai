@@ -9,7 +9,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // We will generate CROPS array dynamically inside the component
 
-export default function MandiScreen() {
+export default function MandiScreen({ route }) {
+  const preloaded = route?.params?.preloaded_data || null;
+  const preloadedCrop = route?.params?.preloaded_crop || null;
   const { t, language } = useLanguage();
   const m = t.mandi;
   const insets = useSafeAreaInsets();
@@ -30,10 +32,19 @@ export default function MandiScreen() {
   const [farmerLng, setFarmerLng] = useState(72.3514);
 
   useEffect(() => {
+    if (preloaded) {
+      setData(preloaded);
+      if (preloadedCrop) {
+        const crop = cropsArray.find(c => c.value === preloadedCrop);
+        if (crop) setSelectedCrop(crop);
+      }
+      setLoading(false);
+    }
     loadFarmerLocation();
   }, []);
 
   useEffect(() => {
+    if (preloaded && data === preloaded && selectedCrop.value === preloadedCrop) return;
     fetchPrices(selectedCrop.value);
   }, [selectedCrop, farmerLat, farmerLng, language]); // re-fetch when language changes
 

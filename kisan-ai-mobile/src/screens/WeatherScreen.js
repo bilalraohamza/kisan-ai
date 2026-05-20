@@ -21,14 +21,14 @@ const RAIN_ICON = (rain) => {
 const getDayName = (dateStr, language) => {
   const date = new Date(dateStr);
   if (language === 'urdu') {
-    const urduDays = ['اتوار','پیر','منگل','بدھ','جمعرات','جمعہ','ہفتہ'];
+    const urduDays = ['اتوار', 'پیر', 'منگل', 'بدھ', 'جمعرات', 'جمعہ', 'ہفتہ'];
     return urduDays[date.getDay()];
   }
   if (language === 'roman_urdu') {
-    const romanDays = ['Itwar','Peer','Mangal','Budh','Jumerat','Juma','Hafta'];
+    const romanDays = ['Itwar', 'Peer', 'Mangal', 'Budh', 'Jumerat', 'Juma', 'Hafta'];
     return romanDays[date.getDay()];
   }
-  const engDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const engDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   return engDays[date.getDay()];
 };
 
@@ -37,28 +37,28 @@ const getFullDayName = (dateStr, language) => {
   const date = new Date(dateStr);
   const day = date.getDate();
   const months = {
-    urdu:       ['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'],
-    roman_urdu: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-    english:    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    urdu: ['جنوری', 'فروری', 'مارچ', 'اپریل', 'مئی', 'جون', 'جولائی', 'اگست', 'ستمبر', 'اکتوبر', 'نومبر', 'دسمبر'],
+    roman_urdu: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    english: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   };
   const days = {
-    urdu:       ['اتوار','پیر','منگل','بدھ','جمعرات','جمعہ','ہفتہ'],
-    roman_urdu: ['Itwar','Peer','Mangal','Budh','Jumerat','Juma','Hafta'],
-    english:    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    urdu: ['اتوار', 'پیر', 'منگل', 'بدھ', 'جمعرات', 'جمعہ', 'ہفتہ'],
+    roman_urdu: ['Itwar', 'Peer', 'Mangal', 'Budh', 'Jumerat', 'Juma', 'Hafta'],
+    english: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   };
   const monthList = months[language] || months['english'];
-  const dayList   = days[language]   || days['english'];
+  const dayList = days[language] || days['english'];
   return `${dayList[date.getDay()]}, ${day} ${monthList[date.getMonth()]}`;
 };
 
 // ── Localised crop label ──────────────────────────────────────────────────────
 const getCropLabel = (cropType, language) => {
   const labels = {
-    wheat:     { roman_urdu: 'Gehun',  urdu: 'گندم',  english: 'Wheat'     },
-    rice:      { roman_urdu: 'Chawal', urdu: 'چاول',  english: 'Rice'      },
-    cotton:    { roman_urdu: 'Kapas',  urdu: 'کپاس',  english: 'Cotton'    },
-    sugarcane: { roman_urdu: 'Ganna',  urdu: 'گنا',   english: 'Sugarcane' },
-    maize:     { roman_urdu: 'Makkai', urdu: 'مکئی',  english: 'Maize'     },
+    wheat: { roman_urdu: 'Gehun', urdu: 'گندم', english: 'Wheat' },
+    rice: { roman_urdu: 'Chawal', urdu: 'چاول', english: 'Rice' },
+    cotton: { roman_urdu: 'Kapas', urdu: 'کپاس', english: 'Cotton' },
+    sugarcane: { roman_urdu: 'Ganna', urdu: 'گنا', english: 'Sugarcane' },
+    maize: { roman_urdu: 'Makkai', urdu: 'مکئی', english: 'Maize' },
   };
   return labels[cropType]?.[language] || cropType || '';
 };
@@ -69,10 +69,10 @@ export default function WeatherScreen({ navigation }) {
   const w = t.weather;
   const insets = useSafeAreaInsets();
 
-  const [data, setData]               = useState(null);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState(false);
-  const [cropType, setCropType]       = useState(null);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [cropType, setCropType] = useState(null);
   const [locationName, setLocationName] = useState('');
 
   // ── Load on mount ──────────────────────────────────────────────────────────
@@ -128,9 +128,9 @@ export default function WeatherScreen({ navigation }) {
   };
 
   // ── Derived display values ─────────────────────────────────────────────────
-  const forecast      = data?.forecast_5_day || [];
+  const forecast = data?.forecast_5_day || [];
   const displayLocation = locationName || data?.location || '';
-  const cropLabel     = getCropLabel(cropType, language);
+  const cropLabel = getCropLabel(cropType, language);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
@@ -169,7 +169,7 @@ export default function WeatherScreen({ navigation }) {
       ) : error ? (
         <View style={s.loader}>
           <Text style={{ color: C.maroon, fontSize: 14, textAlign: 'center' }}>
-            {language === 'urdu' 
+            {language === 'urdu'
               ? "GPS کی اجازت نہیں ملی۔ سیٹنگز میں لوکیشن آن کریں۔"
               : language === 'english'
                 ? "GPS permission denied. Please enable location in settings."
@@ -179,19 +179,19 @@ export default function WeatherScreen({ navigation }) {
 
       ) : (
         <ScrollView contentContainerStyle={s.body}>
-          <UrgentBanner message={data?.urgent_alert} autoSpeak={true} />
+          <UrgentBanner message={data?.urgent_alert} autoSpeak={false} language={language} />
 
           {/* Risk card */}
           {data?.weekly_risk && (
             <View style={[s.riskCard, {
-              backgroundColor: data.weekly_risk === 'high'   ? '#FEE2E2'
+              backgroundColor: data.weekly_risk === 'high' ? '#FEE2E2'
                 : data.weekly_risk === 'medium' ? '#FEF3C7'
                   : '#DCFCE7'
             }]}>
               <Text style={s.riskText}>
                 {w.riskLabel || 'Is hafte ka khatra'}{': '}
                 <Text style={{ fontWeight: '800' }}>
-                  {data.weekly_risk === 'high'   ? (w.riskHigh   || 'Zyada')
+                  {data.weekly_risk === 'high' ? (w.riskHigh || 'Zyada')
                     : data.weekly_risk === 'medium' ? (w.riskMedium || w.riskMed || 'Darmiyana')
                       : (w.riskLow || 'Kam')}
                 </Text>
@@ -286,29 +286,29 @@ export default function WeatherScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  header:        { backgroundColor: C.maroon, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'center' },
-  title:         { color: '#fff', fontWeight: '700', fontSize: 16 },
-  subtitle:      { color: C.goldLt, fontSize: 13 },
-  temp:          { color: '#fff', fontSize: 28, fontWeight: '800', textAlign: 'right' },
-  tempLabel:     { color: C.goldLt, fontSize: 16, textAlign: 'right' },
-  loader:        { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-  body:          { padding: 16, paddingBottom: 80 },
-  riskCard:      { borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: C.sep },
-  riskText:      { fontSize: 13, color: C.ink },
-  harvestText:   { fontSize: 12, color: C.green, marginTop: 4, fontWeight: '600' },
-  actionCard:    { backgroundColor: C.white, borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: C.gold },
-  actionTitle:   { fontSize: 13, fontWeight: '700', color: C.maroon, marginBottom: 4 },
-  actionText:    { fontSize: 13, color: C.ink, lineHeight: 18 },
-  sectionLabel:  { fontSize: 14, fontWeight: '700', color: C.maroon, marginBottom: 10 },
-  dayCard:       { borderRadius: 14, padding: 12, marginRight: 10, alignItems: 'center', minWidth: 85, borderWidth: 1, borderColor: '#D1FAE5' },
-  dayName:       { fontSize: 13, fontWeight: '700', color: C.inkMuted, marginBottom: 4 },
-  rain:          { fontSize: 13, marginTop: 4 },
-  dayTemp:       { fontSize: 12, fontWeight: '700', color: C.ink, marginTop: 2 },
-  advisoryRow:   { backgroundColor: C.white, borderRadius: 10, borderWidth: 0.5, borderColor: C.sep, padding: 12, marginBottom: 8, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  advisoryHeader:{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  advisoryDay:   { fontSize: 13, fontWeight: '700', color: C.ink },
-  advisoryTemp:  { fontSize: 12, color: C.inkMuted },
-  advisoryText:  { fontSize: 12, color: C.inkMuted, lineHeight: 18, marginBottom: 6 },
-  detailRow:     { flexDirection: 'row', gap: 12 },
-  detailText:    { fontSize: 11, color: C.inkMuted },
+  header: { backgroundColor: C.maroon, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'center' },
+  title: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  subtitle: { color: C.goldLt, fontSize: 13 },
+  temp: { color: '#fff', fontSize: 28, fontWeight: '800', textAlign: 'right' },
+  tempLabel: { color: C.goldLt, fontSize: 16, textAlign: 'right' },
+  loader: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  body: { padding: 16, paddingBottom: 80 },
+  riskCard: { borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: C.sep },
+  riskText: { fontSize: 13, color: C.ink },
+  harvestText: { fontSize: 12, color: C.green, marginTop: 4, fontWeight: '600' },
+  actionCard: { backgroundColor: C.white, borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: C.gold },
+  actionTitle: { fontSize: 13, fontWeight: '700', color: C.maroon, marginBottom: 4 },
+  actionText: { fontSize: 13, color: C.ink, lineHeight: 18 },
+  sectionLabel: { fontSize: 14, fontWeight: '700', color: C.maroon, marginBottom: 10 },
+  dayCard: { borderRadius: 14, padding: 12, marginRight: 10, alignItems: 'center', minWidth: 85, borderWidth: 1, borderColor: '#D1FAE5' },
+  dayName: { fontSize: 13, fontWeight: '700', color: C.inkMuted, marginBottom: 4 },
+  rain: { fontSize: 13, marginTop: 4 },
+  dayTemp: { fontSize: 12, fontWeight: '700', color: C.ink, marginTop: 2 },
+  advisoryRow: { backgroundColor: C.white, borderRadius: 10, borderWidth: 0.5, borderColor: C.sep, padding: 12, marginBottom: 8, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  advisoryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  advisoryDay: { fontSize: 13, fontWeight: '700', color: C.ink },
+  advisoryTemp: { fontSize: 12, color: C.inkMuted },
+  advisoryText: { fontSize: 12, color: C.inkMuted, lineHeight: 18, marginBottom: 6 },
+  detailRow: { flexDirection: 'row', gap: 12 },
+  detailText: { fontSize: 11, color: C.inkMuted },
 });

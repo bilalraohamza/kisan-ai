@@ -81,14 +81,30 @@ async def get_weather(
     crop_type: str = None,
     days_to_harvest: int = None
 ):
-    result = run_weather_agent(
-        lat=lat,
-        lng=lng,
-        language=language,
-        crop_type=crop_type,
-        days_to_harvest=days_to_harvest
-    )
-    return result
+    try:
+        result = run_weather_agent(
+            lat=lat,
+            lng=lng,
+            language=language,
+            crop_type=crop_type,
+            days_to_harvest=days_to_harvest
+        )
+        return result
+    except Exception as e:
+        print(f"[weather] Unhandled error: {e}")
+        return {
+            "location": "Pakistan",
+            "forecast_5_day": [],
+            "urgent_alert": None,
+            "best_harvest_window": None,
+            "weekly_risk": "unknown",
+            "action_today": (
+                "Mausam service abhi available nahi. Baad mein try karein."
+                if language == "roman_urdu"
+                else "Weather service unavailable. Please try again later."
+            ),
+            "trace": {"error": str(e)}
+        }
 
 
 class SeasonRequest(BaseModel):

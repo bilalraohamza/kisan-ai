@@ -11,14 +11,32 @@ import { saveFarm, getSessionId } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
-const CROP_OPTIONS = [
-  { label: 'Gehun', value: 'wheat' },
-  { label: 'Chawal', value: 'rice' },
-  { label: 'Ganna', value: 'sugarcane' },
-  { label: 'Kapas', value: 'cotton' },
-  { label: 'Makkai', value: 'maize' },
-  { label: 'Doosra', value: 'other' },
-];
+const CROP_OPTIONS_BY_LANG = {
+  roman_urdu: [
+    { label: 'Gehun',   value: 'wheat',      emoji: '🌾' },
+    { label: 'Chawal',  value: 'rice',        emoji: '🍚' },
+    { label: 'Kapas',   value: 'cotton',      emoji: '🌿' },
+    { label: 'Ganna',   value: 'sugarcane',   emoji: '🎋' },
+    { label: 'Makkai',  value: 'maize',       emoji: '🌽' },
+    { label: 'Doosra',  value: 'other',       emoji: '🌱' },
+  ],
+  urdu: [
+    { label: 'گندم',   value: 'wheat',      emoji: '🌾' },
+    { label: 'چاول',   value: 'rice',        emoji: '🍚' },
+    { label: 'کپاس',   value: 'cotton',      emoji: '🌿' },
+    { label: 'گنا',    value: 'sugarcane',   emoji: '🎋' },
+    { label: 'مکئی',   value: 'maize',       emoji: '🌽' },
+    { label: 'دوسرا',  value: 'other',       emoji: '🌱' },
+  ],
+  english: [
+    { label: 'Wheat',      value: 'wheat',      emoji: '🌾' },
+    { label: 'Rice',       value: 'rice',        emoji: '🍚' },
+    { label: 'Cotton',     value: 'cotton',      emoji: '🌿' },
+    { label: 'Sugarcane',  value: 'sugarcane',   emoji: '🎋' },
+    { label: 'Maize',      value: 'maize',       emoji: '🌽' },
+    { label: 'Other',      value: 'other',       emoji: '🌱' },
+  ],
+};
 
 const LANG_OPTIONS = [
   { key: 'roman_urdu', label: 'Roman Urdu' },
@@ -31,6 +49,8 @@ export default function FarmScreen() {
   const { t, language, selectLanguage } = useLanguage();
   const f = t.farm;
   const insets = useSafeAreaInsets();
+
+  const CROP_OPTIONS = CROP_OPTIONS_BY_LANG[language] || CROP_OPTIONS_BY_LANG['roman_urdu'];
 
   const [acres, setAcres] = useState('5');
   const [city, setCity] = useState('');

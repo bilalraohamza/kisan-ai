@@ -10,10 +10,6 @@ import { useAuth }     from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// ─── Admin / Demo Credentials ─────────────────────────────────────────────────
-const ADMIN_EMAIL    = 'hasnainsharif713@gmail.com';
-const ADMIN_PASSWORD = '12345678';
-
 const validateEmail    = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const validatePassword = (p) => p.length >= 6;
 
@@ -29,8 +25,8 @@ export default function LoginScreen({ navigation }) {
   const a                            = t.auth;
   const insets                       = useSafeAreaInsets();
 
-  const [email, setEmail]       = useState(ADMIN_EMAIL);
-  const [password, setPassword] = useState(ADMIN_PASSWORD);
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [errors, setErrors]     = useState({});
@@ -57,10 +53,10 @@ export default function LoginScreen({ navigation }) {
     setTimeout(async () => {
       try {
         // ── Admin / demo login ──────────────────────────────────────────────
-        if (trimmedEmail === ADMIN_EMAIL.toLowerCase() && trimmedPass === ADMIN_PASSWORD) {
+        if (trimmedEmail === 'demo@kisanai.pk' && trimmedPass === 'kisan2026') {
           await login({
-            name: 'Hasnain Sharif',
-            email: ADMIN_EMAIL,
+            name: 'Demo Kisan',
+            email: 'demo@kisanai.pk',
             role: 'admin',
             provider: 'email',
           });
@@ -127,6 +123,18 @@ export default function LoginScreen({ navigation }) {
 
           <Text style={s.formTitle}>{a.loginTitle}</Text>
           <Text style={s.formSub}>{a.loginSub}</Text>
+
+          <View style={s.demoCard}>
+            <Text style={s.demoTitle}>Demo Account</Text>
+            <Text style={s.demoText}>Email: demo@kisanai.pk</Text>
+            <Text style={s.demoText}>Password: kisan2026</Text>
+            <TouchableOpacity onPress={() => {
+              setEmail('demo@kisanai.pk');
+              setPassword('kisan2026');
+            }}>
+              <Text style={s.demoBtn}>Use Demo Account</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Email */}
           <Text style={s.label}>{a.emailLabel}</Text>
@@ -228,6 +236,10 @@ const s = StyleSheet.create({
   form:             { padding: 22, paddingTop: 24 },
   formTitle:        { fontSize: 21, fontWeight: '800', color: C.maroon, marginBottom: 4 },
   formSub:          { fontSize: 15, color: C.inkMuted, marginBottom: 18 },
+  demoCard:         { backgroundColor: C.goldPale, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: C.gold, marginBottom: 16 },
+  demoTitle:        { fontSize: 14, fontWeight: '700', color: C.maroon, marginBottom: 4 },
+  demoText:         { fontSize: 13, color: C.ink, marginBottom: 2 },
+  demoBtn:          { color: C.maroon, fontWeight: '700', fontSize: 13, marginTop: 6 },
   label:            { fontSize: 14, fontWeight: '700', color: C.ink, marginBottom: 6, marginTop: 4 },
   input:            { backgroundColor: C.white, borderRadius: 12, padding: 14, fontSize: 16, color: C.ink, borderWidth: 1.5, borderColor: C.sep, marginBottom: 4 },
   inputError:       { borderColor: '#EF4444' },
