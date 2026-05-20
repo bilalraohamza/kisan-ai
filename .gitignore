@@ -15,3 +15,13 @@ logs/
 # Environment
 .env
 .env.*
+
+# Backend secrets
+kisan-ai-backend/.env
+
+# Frontend
+kisan-ai-mobile/node_modules/
+kisan-ai-mobile/android/
+kisan-ai-mobile/.expo/
+kisan-ai-mobile/*.jks
+kisan-ai-mobile/*.keystore
