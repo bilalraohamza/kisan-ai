@@ -226,6 +226,13 @@ export default function ServicesScreen() {
                     {coordination.recommendation && (
                       <Text style={s.coordSub}>{coordination.recommendation}</Text>
                     )}
+                    {coordination?.coordination_plan && (
+                      Array.isArray(coordination.coordination_plan)
+                        ? coordination.coordination_plan.map((step, i) => (
+                            <Text key={i} style={s.coordPlan}>• {step}</Text>
+                          ))
+                        : <Text style={s.coordPlan}>{coordination.coordination_plan}</Text>
+                    )}
                     {coordination.total_cost && (
                       <Text style={s.coordPrice}>
                         Total: PKR {coordination.total_cost?.toLocaleString()}
@@ -304,6 +311,7 @@ const s = StyleSheet.create({
   coordCard: { backgroundColor: C.maroon, borderRadius: 18, borderWidth: 2, borderColor: C.gold, padding: 18, marginTop: 6 },
   coordTitle: { color: '#fff', fontSize: 16, fontWeight: '800', marginBottom: 8 },
   coordSub: { color: C.goldLt, fontSize: 13, marginBottom: 8, lineHeight: 20 },
+  coordPlan: { color: C.goldLt, fontSize: 12, marginTop: 4, lineHeight: 18 },
   coordPrice: { color: C.gold, fontSize: 22, fontWeight: '800', marginTop: 4, marginBottom: 8 },
   backupText: { color: C.goldLt, fontSize: 12, marginBottom: 8 },
   bookingMsg: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: 10 },

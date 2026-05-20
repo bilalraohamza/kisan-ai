@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AjrakBand from '../components/AjrakBand';
@@ -168,13 +168,25 @@ export default function WeatherScreen({ navigation }) {
 
       ) : error ? (
         <View style={s.loader}>
-          <Text style={{ color: C.maroon, fontSize: 14, textAlign: 'center' }}>
-            {language === 'urdu'
-              ? "GPS کی اجازت نہیں ملی۔ سیٹنگز میں لوکیشن آن کریں۔"
-              : language === 'english'
-                ? "GPS permission denied. Please enable location in settings."
-                : "GPS ki ijazat nahi mili. Settings mein location on karein."}
+          <Text style={{ color: C.maroon, fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
+            {language === 'urdu' ? 'لوکیشن نہیں ملی۔ دوبارہ کوشش کریں۔'
+             : language === 'english' ? 'Location not found. Please try again.'
+             : 'Location nahi mili. Dobara try karein.'}
           </Text>
+          <TouchableOpacity
+            style={s.retryBtn}
+            onPress={() => {
+              setError(false);
+              setLoading(true);
+              loadCropAndWeather();
+            }}
+          >
+            <Text style={s.retryBtnText}>
+              {language === 'urdu' ? 'دوبارہ کوشش' 
+               : language === 'english' ? 'Retry'
+               : 'Dobara Try Karein'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
       ) : (
@@ -311,4 +323,6 @@ const s = StyleSheet.create({
   advisoryText: { fontSize: 12, color: C.inkMuted, lineHeight: 18, marginBottom: 6 },
   detailRow: { flexDirection: 'row', gap: 12 },
   detailText: { fontSize: 11, color: C.inkMuted },
+  retryBtn: { backgroundColor: C.maroon, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 24, borderWidth: 1.5, borderColor: C.gold },
+  retryBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 });
