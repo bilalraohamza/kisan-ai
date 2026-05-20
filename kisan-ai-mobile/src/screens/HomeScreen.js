@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, Alert,
+  StyleSheet, StatusBar, Alert, Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -128,6 +128,10 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      logout();
+      return;
+    }
     Alert.alert(
       'Logout',
       'Kya aap logout karna chahte hain?',
