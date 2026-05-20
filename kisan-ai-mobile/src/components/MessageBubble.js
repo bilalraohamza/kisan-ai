@@ -4,6 +4,45 @@ import { useNavigation } from '@react-navigation/native';
 import * as Speech from 'expo-speech';
 import { C } from '../constants/colors';
 
+const getNavigateLabel = (navigateTo, language) => {
+  const labels = {
+    Disease: {
+      roman_urdu: '🔬 Bimari Scanner Kholein',
+      urdu: '🔬 بیماری سکینر کھولیں',
+      english: '🔬 Open Disease Scanner',
+    },
+    Mandi: {
+      roman_urdu: '🏪 Mandi Dekhen',
+      urdu: '🏪 منڈی دیکھیں',
+      english: '🏪 View Mandi Prices',
+    },
+    Weather: {
+      roman_urdu: '🌤 Mausam Dekhen',
+      urdu: '🌤 موسم دیکھیں',
+      english: '🌤 View Weather',
+    },
+    Services: {
+      roman_urdu: '🚜 Services Dekhen',
+      urdu: '🚜 خدمات دیکھیں',
+      english: '🚜 View Services',
+    },
+    Season: {
+      roman_urdu: '📅 Calendar Dekhen',
+      urdu: '📅 کیلنڈر دیکھیں',
+      english: '📅 View Calendar',
+    },
+  };
+  const lang = language || 'roman_urdu';
+  return labels[navigateTo]?.[lang] || '→ ' + navigateTo;
+};
+
+const getClarifyLabel = (language) =>
+  ({
+    roman_urdu: '⚠ WAZAHAT DARKAR',
+    urdu: '⚠ وضاحت درکار',
+    english: '⚠ CLARIFICATION NEEDED',
+  }[language] || '⚠ WAZAHAT DARKAR');
+
 export default function MessageBubble({ message }) {
   const navigation = useNavigation();
   const { text, user, clarify, language } = message;
@@ -18,7 +57,7 @@ export default function MessageBubble({ message }) {
   if (clarify) {
     return (
       <View style={styles.clarifyBubble}>
-        <Text style={styles.clarifyLabel}>⚠ WAZAHAT DARKAR</Text>
+        <Text style={styles.clarifyLabel}>{getClarifyLabel(language)}</Text>
         <Text style={styles.clarifyText}>{text}</Text>
         <View style={styles.bubbleFooter}>
           <TouchableOpacity onPress={speak}>
@@ -46,15 +85,17 @@ export default function MessageBubble({ message }) {
       {message.navigate_to && (
         <TouchableOpacity
           style={styles.navigateBtn}
-          onPress={() => navigation.navigate(message.navigate_to)}
+          onPress={() => {
+            navigation.goBack();
+            setTimeout(() => {
+              navigation.navigate('Tabs', {
+                screen: message.navigate_to,
+              });
+            }, 300);
+          }}
         >
           <Text style={styles.navigateBtnText}>
-            {message.navigate_to === 'Disease' ? '🔬 Bimari Scanner Kholein' :
-             message.navigate_to === 'Mandi' ? '🏪 Mandi Dekhen' :
-             message.navigate_to === 'Weather' ? '🌤 Mausam Dekhen' :
-             message.navigate_to === 'Services' ? '🚜 Services Dekhen' :
-             message.navigate_to === 'Calendar' ? '📅 Calendar Dekhen' :
-             '→ ' + message.navigate_to}
+            {getNavigateLabel(message.navigate_to, message.language)}
           </Text>
         </TouchableOpacity>
       )}
