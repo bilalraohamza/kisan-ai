@@ -11,6 +11,7 @@ import { C } from '../constants/colors';
 import { useAuth }     from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 const validateEmail    = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -86,12 +87,39 @@ export default function SignupScreen({ navigation }) {
     if (!validate()) return;
     setLoading(true);
     try {
-      // TODO: replace with real API call
-      // await api.post('/auth/signup', { name, phone, email, password });
-      await new Promise(r => setTimeout(r, 900));
-      await login({ name: name.trim(), email: email.trim(), phone: phone.trim(), provider: 'email' });
-    } catch {
-      Alert.alert('Signup fail', 'Koi masla aaya. Dobara try karein.');
+      // Load existing accounts
+      const existing = await AsyncStorage.getItem('kisan_accounts');
+      const accounts = existing ? JSON.parse(existing) : [];
+
+      // Check if email already exists
+      const alreadyExists = accounts.find(
+        a => a.email.toLowerCase() === email.trim().toLowerCase()
+      );
+      if (alreadyExists) {
+        setErrors(prev => ({
+          ...prev,
+          email: language === 'urdu' ? 'یہ ای میل پہلے سے موجود ہے' :
+                 language === 'english' ? 'Email already exists' :
+                 'Yeh email pehle se exist karti hai',
+        }));
+        return;
+      }
+
+      // Save new account
+      const newAccount = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phone: phone.trim(),
+      };
+      accounts.push(newAccount);
+      await AsyncStorage.setItem('kisan_accounts', JSON.stringify(accounts));
+
+      // Auto login
+      await login({ name: newAccount.name, email: newAccount.email });
+    } catch (e) {
+      console.log('Signup error:', e);
+      setErrors(prev => ({ ...prev, email: 'Kuch masla hua. Dobara try karein.' }));
     } finally {
       setLoading(false);
     }

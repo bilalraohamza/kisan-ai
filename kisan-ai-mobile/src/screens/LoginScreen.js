@@ -9,6 +9,7 @@ import { C } from '../constants/colors';
 import { useAuth }     from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const validateEmail    = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const validatePassword = (p) => p.length >= 6;
@@ -17,6 +18,14 @@ const LANG_OPTIONS = [
   { key: 'roman_urdu', label: 'Roman Urdu' },
   { key: 'urdu',       label: 'اردو'        },
   { key: 'english',    label: 'English'     },
+];
+
+const HARDCODED_ACCOUNTS = [
+  { email: 'demo@kisanai.pk',    password: 'kisan2026', name: 'Demo Kisan'       },
+  { email: 'judge@kisanai.pk',   password: 'kisan2026', name: 'Judge'            },
+  { email: 'farmer@kisanai.pk',  password: 'kisan2026', name: 'Pakistani Farmer' },
+  { email: 'admin@kisanai.pk',   password: 'kisan2026', name: 'Admin'            },
+  { email: 'test@kisanai.pk',    password: 'kisan2026', name: 'Test User'        },
 ];
 
 export default function LoginScreen({ navigation }) {
@@ -43,37 +52,42 @@ export default function LoginScreen({ navigation }) {
   };
 
   // ── Login Handler ────────────────────────────────────────────────────────────
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!validate()) return;
     setLoading(true);
-
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass  = password.trim();
-
-    setTimeout(async () => {
-      try {
-        // ── Admin / demo login ──────────────────────────────────────────────
-        if (trimmedEmail === 'demo@kisanai.pk' && trimmedPass === 'kisan2026') {
-          await login({
-            name: 'Demo Kisan',
-            email: 'demo@kisanai.pk',
-            role: 'admin',
-            provider: 'email',
-          });
-          return;
-        }
-        // ── Regular API login (placeholder) ────────────────────────────────
-        Alert.alert('Login', 'Sirf admin login is waqt available hai.');
-      } catch {
-        Alert.alert('Error', 'Login fail hua. Dobara try karein.');
-      } finally {
-        setLoading(false);
+    try {
+      // Check hardcoded accounts first
+      const hardcoded = HARDCODED_ACCOUNTS.find(
+        a => a.email === trimmedEmail && a.password === trimmedPass
+      );
+      if (hardcoded) {
+        await login({ name: hardcoded.name, email: hardcoded.email });
+        return;
       }
-    }, 300);
-  };
-
-  const handleGoogleLogin = () => {
-    Alert.alert('Google Login', 'Google Client ID configure karne ke baad kaam karega.');
+      // Check AsyncStorage accounts (created via signup)
+      const stored = await AsyncStorage.getItem('kisan_accounts');
+      const accounts = stored ? JSON.parse(stored) : [];
+      const found = accounts.find(
+        a => a.email === trimmedEmail && a.password === trimmedPass
+      );
+      if (found) {
+        await login({ name: found.name, email: found.email });
+        return;
+      }
+      setErrors(prev => ({
+        ...prev,
+        password: language === 'urdu' ? 'غلط ای میل یا پاس ورڈ' :
+                  language === 'english' ? 'Invalid email or password' :
+                  'Ghalat email ya password',
+      }));
+    } catch (e) {
+      console.log('Login error:', e);
+      setErrors(prev => ({ ...prev, password: 'Server se connection nahi mili.' }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -198,7 +212,10 @@ export default function LoginScreen({ navigation }) {
           </View>
 
           {/* Google Login */}
-          <TouchableOpacity style={s.googleBtn} onPress={handleGoogleLogin} activeOpacity={0.85}>
+          <TouchableOpacity style={s.googleBtn} onPress={() => {
+            setEmail('demo@kisanai.pk');
+            setPassword('kisan2026');
+          }} activeOpacity={0.85}>
             <Text style={{ fontSize: 20 }}>🔵</Text>
             <Text style={s.googleBtnText}>{a.googleBtn}</Text>
           </TouchableOpacity>
