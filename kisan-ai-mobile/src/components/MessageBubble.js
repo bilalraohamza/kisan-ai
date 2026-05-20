@@ -43,7 +43,7 @@ const getClarifyLabel = (language) =>
     english: '⚠ CLARIFICATION NEEDED',
   }[language] || '⚠ WAZAHAT DARKAR');
 
-export default function MessageBubble({ message }) {
+export default function MessageBubble({ message, onLongPress }) {
   const navigation = useNavigation();
   const { text, user, clarify, language } = message;
 
@@ -56,58 +56,64 @@ export default function MessageBubble({ message }) {
 
   if (clarify) {
     return (
-      <View style={styles.clarifyBubble}>
-        <Text style={styles.clarifyLabel}>{getClarifyLabel(language)}</Text>
-        <Text style={styles.clarifyText}>{text}</Text>
-        <View style={styles.bubbleFooter}>
-          <TouchableOpacity onPress={speak}>
-            <Text style={{ fontSize: 16 }}>🔊</Text>
-          </TouchableOpacity>
-          <View style={styles.langBadge}>
-            <Text style={styles.langBadgeText}>{language || 'Roman Urdu'}</Text>
+      <TouchableOpacity activeOpacity={1} onLongPress={onLongPress} delayLongPress={600}>
+        <View style={styles.clarifyBubble}>
+          <Text style={styles.clarifyLabel}>{getClarifyLabel(language)}</Text>
+          <Text style={styles.clarifyText}>{text}</Text>
+          <View style={styles.bubbleFooter}>
+            <TouchableOpacity onPress={speak}>
+              <Text style={{ fontSize: 16 }}>🔊</Text>
+            </TouchableOpacity>
+            <View style={styles.langBadge}>
+              <Text style={styles.langBadgeText}>{language || 'Roman Urdu'}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 
   if (user) {
     return (
-      <View style={styles.userBubble}>
-        <Text style={styles.userText}>{text}</Text>
-      </View>
+      <TouchableOpacity activeOpacity={1} onLongPress={onLongPress} delayLongPress={600}>
+        <View style={styles.userBubble}>
+          <Text style={styles.userText}>{text}</Text>
+        </View>
+      </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.aiBubble}>
-      <Text style={styles.aiText}>{text}</Text>
-      {message.navigate_to && (
-        <TouchableOpacity
-          style={styles.navigateBtn}
-          onPress={() => {
-            navigation.goBack();
-            setTimeout(() => {
-              navigation.navigate('Tabs', {
-                screen: message.navigate_to,
-              });
-            }, 300);
-          }}
-        >
-          <Text style={styles.navigateBtnText}>
-            {getNavigateLabel(message.navigate_to, message.language)}
-          </Text>
-        </TouchableOpacity>
-      )}
-      <View style={styles.bubbleFooter}>
-        <View style={styles.langBadge}>
-          <Text style={styles.langBadgeText}>{language || 'Roman Urdu'}</Text>
+    <TouchableOpacity activeOpacity={1} onLongPress={onLongPress} delayLongPress={600}>
+      <View style={styles.aiBubble}>
+        <Text style={styles.aiText}>{text}</Text>
+        {message.navigate_to && (
+          <TouchableOpacity
+            style={styles.navigateBtn}
+            onPress={() => {
+              navigation.goBack();
+              setTimeout(() => {
+                navigation.navigate('Tabs', {
+                  screen: message.navigate_to,
+                });
+              }, 300);
+            }}
+          >
+            <Text style={styles.navigateBtnText}>
+              {getNavigateLabel(message.navigate_to, message.language)}
+            </Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.bubbleFooter}>
+          <View style={styles.langBadge}>
+            <Text style={styles.langBadgeText}>{language || 'Roman Urdu'}</Text>
+          </View>
+          <TouchableOpacity onPress={speak}>
+            <Text style={{ fontSize: 16 }}>🔊</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={speak}>
-          <Text style={{ fontSize: 16 }}>🔊</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

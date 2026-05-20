@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, Modal, Alert,
   ScrollView, StyleSheet, ActivityIndicator,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
@@ -12,19 +12,62 @@ import { C } from '../constants/colors';
 import { chatMessage } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
+const CHAT_STORAGE_KEY = 'kisan_chat_history';
+
 export default function ChatScreen() {
   const { t, language } = useLanguage();
   const ch = t.chat;
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef(null);
 
-  const INITIAL_MESSAGES = [
-    { id: '1', text: ch.initialMsg, user: false, language },
-  ];
-
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedMsg, setSelectedMsg] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const welcomeMsg = () => ({
+    id: Date.now().toString(),
+    text: language === 'urdu'
+      ? 'سلام! میں کسان AI ہوں۔ اپنا مسئلہ بتائیں۔'
+      : language === 'english'
+      ? 'Hello! I am Kisan AI. How can I help you today?'
+      : 'Salam! Main Kisan AI hoon. Apna masla batayein.',
+    user: false,
+    language: language || 'roman_urdu',
+  });
+
+  const saveMessages = async (msgs) => {
+    try {
+      await AsyncStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(msgs));
+    } catch (e) {
+      console.log('Save messages error:', e);
+    }
+  };
+
+  const loadMessages = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(CHAT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      }
+    } catch (e) {
+      console.log('Load messages error:', e);
+    }
+    setMessages([welcomeMsg()]);
+  };
+
+  // Load on mount
+  useEffect(() => { loadMessages(); }, []);
+
+  // Persist whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) saveMessages(messages);
+  }, [messages]);
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
@@ -32,6 +75,24 @@ export default function ChatScreen() {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   }, [messages]);
+
+  const handleLongPress = (message) => {
+    setSelectedMsg(message);
+    setShowDeleteModal(true);
+  };
+
+  const deleteMessage = () => {
+    const updated = messages.filter(m => m.id !== selectedMsg.id);
+    setMessages(updated);
+    saveMessages(updated);
+    setShowDeleteModal(false);
+    setSelectedMsg(null);
+  };
+
+  const clearAllMessages = async () => {
+    await AsyncStorage.removeItem(CHAT_STORAGE_KEY);
+    setMessages([welcomeMsg()]);
+  };
 
   const send = async () => {
     if (!input.trim() || loading) return;
@@ -87,7 +148,44 @@ export default function ChatScreen() {
               <Text style={s.subtitle}>{ch.subtitle}</Text>
             </View>
             <View style={s.headerRight}>
-              <Text style={{ fontSize: 18, color: C.goldLt }}>🔊</Text>
+              <TouchableOpacity
+                style={s.clearBtn}
+                onPress={() => {
+                  if (Platform.OS === 'web') {
+                    const confirmed = window.confirm(
+                      language === 'urdu' ? 'کیا آپ پوری چیٹ حذف کرنا چاہتے ہیں؟' :
+                      language === 'english' ? 'Are you sure you want to clear all messages?' :
+                      'Kya aap poori chat delete karna chahte hain?'
+                    );
+                    if (confirmed) clearAllMessages();
+                    return;
+                  }
+                  Alert.alert(
+                    language === 'urdu' ? 'چیٹ صاف کریں' :
+                    language === 'english' ? 'Clear Chat' :
+                    'Chat Clear Karein',
+                    language === 'urdu' ? 'کیا آپ پوری چیٹ حذف کرنا چاہتے ہیں؟' :
+                    language === 'english' ? 'Are you sure you want to clear all messages?' :
+                    'Kya aap poori chat delete karna chahte hain?',
+                    [
+                      {
+                        text: language === 'urdu' ? 'نہیں' :
+                              language === 'english' ? 'No' : 'Nahi',
+                        style: 'cancel'
+                      },
+                      {
+                        text: language === 'urdu' ? 'ہاں، صاف کریں' :
+                              language === 'english' ? 'Yes, Clear' :
+                              'Haan, Clear Karein',
+                        style: 'destructive',
+                        onPress: clearAllMessages
+                      }
+                    ]
+                  );
+                }}
+              >
+                <Text style={s.clearBtnText}>🗑</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -103,7 +201,11 @@ export default function ChatScreen() {
           }
         >
           {messages.map(item => (
-            <MessageBubble key={item.id} message={item} />
+            <MessageBubble
+              key={item.id}
+              message={item}
+              onLongPress={() => handleLongPress(item)}
+            />
           ))}
           {loading && (
             <View style={s.typing}>
@@ -127,6 +229,52 @@ export default function ChatScreen() {
             <Text style={{ fontSize: 18 }}>📤</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Delete message modal */}
+        <Modal
+          visible={showDeleteModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowDeleteModal(false)}
+        >
+          <TouchableOpacity
+            style={s.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowDeleteModal(false)}
+          >
+            <View style={s.modalCard}>
+              <View style={s.modalHeader}>
+                <Text style={s.modalTitle}>
+                  {language === 'urdu' ? 'پیغام' :
+                   language === 'english' ? 'Message' :
+                   'Message'}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={s.modalDeleteBtn}
+                onPress={deleteMessage}
+              >
+                <Text style={s.modalDeleteText}>
+                  {language === 'urdu' ? '🗑 یہ پیغام حذف کریں' :
+                   language === 'english' ? '🗑 Delete this message' :
+                   '🗑 Yeh message delete karein'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={s.modalCancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={s.modalCancelText}>
+                  {language === 'urdu' ? 'منسوخ' :
+                   language === 'english' ? 'Cancel' :
+                   'Cancel'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
       </View>
     </KeyboardAvoidingView>
@@ -174,4 +322,46 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderColor: C.gold
   },
+  clearBtn: {
+    padding: 8, marginRight: 4,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    width: 36, height: 36,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  clearBtnText: { fontSize: 16 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+    paddingBottom: 30,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: C.sep,
+  },
+  modalHeader: {
+    backgroundColor: C.maroon,
+    padding: 14,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 15, fontWeight: '800', color: '#fff', letterSpacing: 0.5,
+  },
+  modalDeleteBtn: {
+    padding: 16,
+    borderBottomWidth: 0.5, borderBottomColor: C.sep,
+    alignItems: 'center',
+  },
+  modalDeleteText: { fontSize: 15, color: '#DC2626', fontWeight: '700' },
+  modalCancelBtn: {
+    padding: 16,
+    alignItems: 'center',
+    backgroundColor: C.cream,
+  },
+  modalCancelText: { fontSize: 15, color: C.inkMuted, fontWeight: '700' },
 });
