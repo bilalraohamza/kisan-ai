@@ -256,6 +256,28 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
 
+        {!farmProfile && (
+          <TouchableOpacity
+            style={s.setupCard}
+            onPress={() => navigation.navigate('Farm')}
+          >
+            <Text style={s.setupEmoji}>👆</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.setupTitle}>
+                {language === 'urdu' ? 'پروفائل سیٹ اپ کریں' :
+                 language === 'english' ? 'Set up your profile first' :
+                 'Pehle apna profile set karein'}
+              </Text>
+              <Text style={s.setupSub}>
+                {language === 'urdu' ? 'موسم، منڈی اور خدمات کے لیے ضروری ہے' :
+                 language === 'english' ? 'Required for weather, mandi and services' :
+                 'Mausam, mandi aur khadmaat ke liye zaroori hai'}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 18 }}>→</Text>
+          </TouchableOpacity>
+        )}
+
         <Text style={s.sectionLabel}>{hm.sectionLabel}</Text>
 
         <View style={s.grid}>
@@ -310,5 +332,8 @@ const s = StyleSheet.create({
   featureCard: { width: '47%', borderWidth: 1.5, borderRadius: 16, padding: 13 },
   featureTitle: { fontSize: 14, fontWeight: '700', color: C.ink },
   featureSub: { fontSize: 12, color: C.inkMuted, marginTop: 2, lineHeight: 16 },
-
+  setupCard: { backgroundColor: C.maroon, borderRadius: 14, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 2, borderColor: C.gold },
+  setupEmoji: { fontSize: 24 },
+  setupTitle: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  setupSub: { color: C.goldLt, fontSize: 12, marginTop: 2 },
 });

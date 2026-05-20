@@ -147,6 +147,11 @@ CRITICAL RULES:
 - If days_to_harvest <= 7: add weather check alert
 - Always include: equipment booking, labor arrangement,
   storage booking, transport arrangement, mandi visit
+- navigate_to rules for upcoming_services:
+  * If service is harvester, labor, tractor, storage, transport → "Services"
+  * If service is mandi, selling, price check → "Mandi"
+  * If service is weather check, rain check → "Weather"
+  * Everything else → null
 
 ABSOLUTE LANGUAGE RULE — VIOLATION IS NOT ACCEPTABLE:
 The farmer has selected language: {language}
@@ -184,18 +189,19 @@ without any exception:
 - reasoning
 
 Return ONLY valid JSON. No markdown. No explanation outside JSON.
-{{
+{
   "upcoming_services": [
-    {{
+    {
       "service": "service name",
       "recommended_by": "YYYY-MM-DD",
       "urgency": "high or medium or low",
       "reason": "why this service is needed now in farmer language",
-      "action": "what farmer should do specifically"
-    }}
+      "action": "what farmer should do specifically",
+      "navigate_to": "Services or Mandi or Weather or null"
+    }
   ],
   "full_calendar": [
-    {{
+    {
       "date": "YYYY-MM-DD",
       "event": "event name",
       "description": "description in farmer language"

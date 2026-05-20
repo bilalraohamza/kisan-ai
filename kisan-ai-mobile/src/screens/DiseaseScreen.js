@@ -154,7 +154,11 @@ export default function DiseaseScreen() {
               <View style={s.diseaseTop}>
                 <View>
                   <Text style={[s.diseaseName, { color: severityColor(result.severity) }]}>
-                    {result.disease_name_urdu || result.disease_name}
+                    {language === 'urdu' 
+                      ? (result.disease_name_urdu || result.disease_name)
+                      : language === 'english'
+                      ? result.disease_name
+                      : (result.disease_name_roman_urdu || result.disease_name)}
                   </Text>
                   <Text style={s.diseaseScientific}>{result.disease_name}</Text>
                 </View>
@@ -170,7 +174,11 @@ export default function DiseaseScreen() {
                   {result.confidence_percent}% {d.confidence}
                 </Text>
               </View>
-              <Text style={s.diseaseDesc}>{result.description}</Text>
+              <Text style={s.diseaseDesc}>
+                {language === 'english' 
+                  ? result.description 
+                  : result.farmer_description || result.description}
+              </Text>
             </View>
 
             {/* Expert BEFORE medicines — ethical rule */}

@@ -55,6 +55,7 @@ export default function ChatScreen() {
         user: false,
         language: data.language || language,
         clarify: data.needs_clarification,
+        navigate_to: data.navigate_to || null,
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch {

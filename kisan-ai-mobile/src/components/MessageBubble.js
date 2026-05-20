@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import * as Speech from 'expo-speech';
 import { C } from '../constants/colors';
 
 export default function MessageBubble({ message }) {
+  const navigation = useNavigation();
   const { text, user, clarify, language } = message;
 
   const speak = () => {
@@ -41,6 +43,21 @@ export default function MessageBubble({ message }) {
   return (
     <View style={styles.aiBubble}>
       <Text style={styles.aiText}>{text}</Text>
+      {message.navigate_to && (
+        <TouchableOpacity
+          style={styles.navigateBtn}
+          onPress={() => navigation.navigate(message.navigate_to)}
+        >
+          <Text style={styles.navigateBtnText}>
+            {message.navigate_to === 'Disease' ? '🔬 Bimari Scanner Kholein' :
+             message.navigate_to === 'Mandi' ? '🏪 Mandi Dekhen' :
+             message.navigate_to === 'Weather' ? '🌤 Mausam Dekhen' :
+             message.navigate_to === 'Services' ? '🚜 Services Dekhen' :
+             message.navigate_to === 'Calendar' ? '📅 Calendar Dekhen' :
+             '→ ' + message.navigate_to}
+          </Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.bubbleFooter}>
         <View style={styles.langBadge}>
           <Text style={styles.langBadgeText}>{language || 'Roman Urdu'}</Text>
@@ -107,4 +124,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   langBadgeText: { fontSize: 9, color: '#1D6A96', fontWeight: '600' },
+  navigateBtn: {
+    backgroundColor: C.maroon,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: C.gold,
+  },
+  navigateBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });
