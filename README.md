@@ -49,14 +49,14 @@ Each agent follows a strict trace format:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    React Native App                      │
+│                    React Native App                     │
 │         (Android APK + Web — Expo)                      │
 │                                                         │
 │  Chat  Disease  Weather  Mandi  Services  Calendar      │
 └──────────────────────┬──────────────────────────────────┘
                        │ HTTPS
 ┌──────────────────────▼──────────────────────────────────┐
-│              FastAPI Backend (Google Cloud Run)          │
+│              FastAPI Backend (Google Cloud Run)         │
 │                   asia-south1 region                    │
 │                                                         │
 │  /api/chat  /api/disease  /api/farm  /api/mandi         │
@@ -244,5 +244,5 @@ kisan-ai/
 
 | Member | Role |
 |---|---|
-| Person A (Hasnain) | Backend, all 6 agents, Cloud Run, LLM integration |
-| Person B (Bilal) | Frontend, all screens, language system, UX/UI |
+| Person A (Rao Hamza Bilal) | Backend, all 6 agents, Cloud Run, LLM integration |
+| Person B (Hasnain Shareef) | Frontend, all screens, language system, UX/UI |
