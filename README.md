@@ -5,7 +5,6 @@
 
 **Live Backend:** https://kisan-ai-backend-669164319923.asia-south1.run.app  
 **API Docs:** https://kisan-ai-backend-669164319923.asia-south1.run.app/docs  
-**Demo:** Email `demo@kisanai.pk` · Password `kisan2026`
 
 ---
 
